@@ -14,11 +14,12 @@ import java.util.function.Consumer;
 import catdata.Chc;
 import catdata.Pair;
 import catdata.Util;
+import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Constraints;
 import catdata.cql.ED;
 import catdata.cql.Kind;
 import catdata.cql.Term;
-import catdata.cql.AqlOptions.AqlOption;
+import catdata.cql.fdm.LiteralTransform;
 
 public class EdsExpLearn<Gen, Sk, X, Y> extends EdsExp {
 	InstExp<Gen, Sk, X, Y> I, J;
@@ -63,9 +64,9 @@ public class EdsExpLearn<Gen, Sk, X, Y> extends EdsExp {
 		int w = 0;
 		Map<Object, Object> m = new HashMap<>();
 		for (String en : i.algebra().schema().ens) {
-			System.out.println(en);
+			//System.out.println(en);
 			for (X x : i.algebra().en(en)) {
-				System.out.println(x);
+			//	System.out.println(x);
 				as.put("v" + w, Chc.inRight(en));
 				for (Att att : i.algebra().schema().attsFrom(en)) {
 					Term<String, Void, Sym, Void, Void, Void, Y> t1 = i.algebra().att(att, x);
@@ -93,9 +94,9 @@ public class EdsExpLearn<Gen, Sk, X, Y> extends EdsExp {
 		}
 	
 		for (String en : i.algebra().schema().ens) {
-			System.out.println("X" + en);
+		//	System.out.println("X" + en);
 			for (X x : j.algebra().en(en)) {
-				System.out.println("X" + x);
+			//	System.out.println("X" + x);
 				es.put("v" + w, Chc.inRight(en));
 				for (Att att : j.algebra().schema().attsFrom(en)) {
 					Term<String, Void, Sym, Void, Void, Void, Y> t1 = j.algebra().att(att, x);
@@ -112,8 +113,9 @@ public class EdsExpLearn<Gen, Sk, X, Y> extends EdsExp {
 		}
 		
 		
-		
-		ls.add(new ED(as, es, awh, ewh, false, env.defaults));
+		var pqr = new ED(as, es, awh, ewh, false, env.defaults);
+	//	var stu = pqr.asTransform(i.schema());
+		ls.add(pqr); //new ED(env.defaults, stu));
 		
 		var y = new Constraints(i.schema(), ls, env.defaults);
 		return y;

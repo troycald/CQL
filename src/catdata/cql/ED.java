@@ -467,50 +467,7 @@ public class ED {
 			}
 			Ewh = z2;
 		}
-		/*
-		 * 
-		 * 
-		 * Iterator<Pair<Term<String, String, Sym, Fk, Att, Void, Void>, Term<String,
-		 * String, Sym, Fk, Att, Void, Void>>> it = Ewh .iterator();
-		 * 
-		 * while (it.hasNext()) { Pair<Term<String, String, Sym, Fk, Att, Void, Void>,
-		 * Term<String, String, Sym, Fk, Att, Void, Void>> j = it .next(); if
-		 * (j.first.equals(j.second) || Awh.contains(j) || Awh.contains(new
-		 * Pair<>(j.second, j.first))) { it.remove(); }
-		 * 
-		 * }
-		 * 
-		 * Iterator<Entry<String, Chc<String, String>>> itt = As.entrySet().iterator();
-		 * while (itt.hasNext()) { Entry<String, Chc<String, String>> e = itt.next();
-		 * for (Pair<Term<String, String, Sym, Fk, Att, Void, Void>, Term<String,
-		 * String, Sym, Fk, Att, Void, Void>> eq : Awh) { if (eq.first.isVar() &&
-		 * eq.first.var.equals(e.getKey())) { itt.remove(); Awh = subst(eq.first.var,
-		 * eq.second, Awh); Ewh = subst(eq.first.var, eq.second, Ewh); } else if
-		 * (eq.second.isVar() && eq.second.var.equals(e.getKey())) { itt.remove(); Awh =
-		 * subst(eq.second.var, eq.first, Awh); Ewh = subst(eq.second.var, eq.first,
-		 * Ewh); } } }
-		 * 
-		 * it = Ewh.iterator(); while (it.hasNext()) { Pair<Term<String, String, Sym,
-		 * Fk, Att, Void, Void>, Term<String, String, Sym, Fk, Att, Void, Void>> j = it
-		 * .next(); if (j.first.att() != null && j.second.att() != null &&
-		 * j.first.att().equals(j.second.att())) { for (Pair<Term<String, String,
-		 * catdata.aql.exp.Sym, catdata.aql.exp.Fk, catdata.aql.exp.Att, Void, Void>,
-		 * Term<String, String, catdata.aql.exp.Sym, catdata.aql.exp.Fk,
-		 * catdata.aql.exp.Att, Void, Void>> eq2 : Ewh) { if
-		 * (eq2.first.equals(j.first.arg) && eq2.second.equals(j.second.arg)) {
-		 * it.remove(); break; } if (eq2.second.equals(j.first.arg) &&
-		 * eq2.first.equals(j.second.arg)) { it.remove(); break; } } } } it =
-		 * Awh.iterator(); while (it.hasNext()) { Pair<Term<String, String, Sym, Fk,
-		 * Att, Void, Void>, Term<String, String, Sym, Fk, Att, Void, Void>> j = it
-		 * .next(); if (j.first.att() != null && j.second.att() != null &&
-		 * j.first.att().equals(j.second.att())) { for (Pair<Term<String, String,
-		 * catdata.aql.exp.Sym, catdata.aql.exp.Fk, catdata.aql.exp.Att, Void, Void>,
-		 * Term<String, String, catdata.aql.exp.Sym, catdata.aql.exp.Fk,
-		 * catdata.aql.exp.Att, Void, Void>> eq2 : Awh) { if
-		 * (eq2.first.equals(j.first.arg) && eq2.second.equals(j.second.arg)) {
-		 * it.remove(); break; } if (eq2.second.equals(j.first.arg) &&
-		 * eq2.first.equals(j.second.arg)) { it.remove(); break; } } } }
-		 */
+	
 
 		is.put(FRONT, new Triple<>(As, freeze(Awh), options));
 		Map<String, Chc<String, String>> AsEs = new THashMap<>();
@@ -675,7 +632,7 @@ public class ED {
 		}
 	}
 
-	public ED(/* Schema<Ty, En, Sym, Fk, Att> schema, */ Map<String, Chc<String, String>> as,
+	public ED( Map<String, Chc<String, String>> as,
 			Map<String, Chc<String, String>> es,
 			Set<Pair<Term<String, String, Sym, Fk, Att, Void, Void>, Term<String, String, Sym, Fk, Att, Void, Void>>> awh,
 			Set<Pair<Term<String, String, Sym, Fk, Att, Void, Void>, Term<String, String, Sym, Fk, Att, Void, Void>>> ewh,

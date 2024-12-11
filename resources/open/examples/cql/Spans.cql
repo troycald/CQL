@@ -1,3 +1,5 @@
+options timeout = 120
+
 schema S = literal : rdf {
 	entities
 		A B

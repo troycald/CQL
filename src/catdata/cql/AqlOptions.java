@@ -62,7 +62,7 @@ public final class AqlOptions {
     allow_sql_import_all_unsafe, jena_reasoner, allow_aggregation_unsafe, import_sql_direct_prefix,
     fast_consistency_check, diverge_warn, diverge_limit, csv_entity_name, interpet_as_frozen, static_timeout,
     prover_simplify_max, talg_reduction, prover_allow_fresh_constants, second_prover, simple_query_entity,
-    sql_constraints_simple, e_use_auto, is_oracle,
+    sql_constraints_simple, e_use_auto, is_oracle, check_warn_instead_of_fail,
     quotient_use_chase, chase_style, allow_empty_sorts_unsafe, program_allow_nonconfluence_unsafe, active_domain,
     gui_sample, gui_sample_size, import_dont_check_closure_unsafe, js_env_name, interpret_as_algebra,
     csv_field_delim_char, csv_escape_char, csv_quote_char, csv_file_extension, csv_generate_ids, emit_ids,
@@ -212,6 +212,7 @@ public final class AqlOptions {
     case csv_generate_ids -> false;
     case csv_file_extension -> "csv";
     case start_ids_at -> 0;
+    case check_warn_instead_of_fail -> false;
 
     case map_nulls_arbitrarily_unsafe -> false;
     case coproduct_allow_type_collisions_unsafe -> false;
@@ -324,6 +325,7 @@ public final class AqlOptions {
     case jena_reasoner -> op.getString(map);
     case allow_sql_import_all_unsafe -> op.getBoolean(map);
     case import_sql_direct_prefix -> op.getString(map);
+    case check_warn_instead_of_fail -> op.getBoolean(map);
     // case lax_literals:
     // return op.getBoolean(map);
     case sql_constraints_simple -> op.getBoolean(map);

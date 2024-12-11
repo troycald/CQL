@@ -141,7 +141,7 @@ public class IDE {
 			}
 		});
 
-		new Thread(() -> {
+	/*	new Thread(() -> {
 			File jf = new File("cql.jar");
 			if (jf.exists()) {
 				long current = jf.lastModified();
@@ -169,7 +169,7 @@ public class IDE {
 				}
 			}
 
-		}).start();
+		}).start(); */
 	}
 
 	{

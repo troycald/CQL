@@ -1366,6 +1366,7 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 			Runnable runnable = () -> {
 				try {
 					Set<Term<String, Void, Sym, Void, Void, Void, Void>> z = T.hom(l0, r);
+					//System.out.println(z);
 					// Collection<Pair<OplCtx<S, V>, OplTerm<C, V>>> z =
 					// kb.hom0(Thread.currentThread(), l0, r);
 					// List<String> u = z.stream().map(o -> OplTerm.strip(o.first + " |- " +
@@ -1386,7 +1387,7 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 				t.start();
 				t.join(10000); // TODO aql
 
-				t.stop();
+			//	t.stop();
 				if (bot.getText().equals("")) {
 					bot.setText("Timeout (10s)");
 				}

@@ -54,6 +54,8 @@ public interface TransExpCoVisitor<R, P, E extends Exception> {
   public <Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2> TransExpPi<Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2> visitTransExpPi(
       P params, R exp);
 
-  public TransExpFrozen visitTransExpFrozen(P params, R exp) throws RuntimeException;
+  public TransExpFrozen visitTransExpFrozen(P params, R exp)  ;
+  
+  public <Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2> TransExpSubseteq<Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2>  visitTransExpSubseteq(P params, R exp)  ;
 
 }

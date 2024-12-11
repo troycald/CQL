@@ -45,9 +45,9 @@ schema WaterSchema = literal : sql {
 #name mapping during import, or to generate missing fields, etc; for details, see the built-in
 #CSV example.   
 
-instance LandInstance = import_csv "http://categoricaldata.net/demo/LandDB/" : LandSchema 
+instance LandInstance = import_csv "https://categoricaldata.net/demo/LandDB/" : LandSchema 
 
-instance WaterInstance = import_csv "http://categoricaldata.net/demo/WaterDB/" : WaterSchema 
+instance WaterInstance = import_csv "https://categoricaldata.net/demo/WaterDB/" : WaterSchema 
 
 #command clear = exec_cmdline { "rm -rf exportedLand" }
 

@@ -2,6 +2,8 @@ package catdata.cql.exp;
 
 import java.io.File;
 import java.io.FileReader;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,12 +17,12 @@ import catdata.Program;
 import catdata.Unit;
 import catdata.Util;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
+import catdata.cql.AqlProver.ProverName;
 import catdata.cql.AqlSyntax;
 import catdata.cql.Instance;
 import catdata.cql.Kind;
 import catdata.cql.Pragma;
-import catdata.cql.AqlOptions.AqlOption;
-import catdata.cql.AqlProver.ProverName;
 import catdata.ide.Example;
 import catdata.ide.Examples;
 import catdata.ide.Language;
@@ -288,6 +290,10 @@ public class AqlHelp {
 			return "do not use";
 		case sql_constraints_simple:
 			return "do not use";
+	//	default:
+	//		break;
+		case check_warn_instead_of_fail:
+			return "When true, check commans will emit warnings instead of stopping execution";
 		default:
 			break;
 
@@ -327,9 +333,9 @@ public class AqlHelp {
 				dir.mkdir();
 			}
 
-			String css = "\n<link rel=\"stylesheet\" href=\"http://categoricaldata.net/css/nstyle.css\"><script src=\"http://categoricaldata.net/js/simple.js\"></script>";
+			String css = "\n<link rel=\"stylesheet\" href=\"../css/nstyle.css\">";
 
-			String search = "<html><head>\n" + "\n" + css + "\n" + "<div>\n"
+		/*	String search = "<html><head>\n" + "\n" + css + "\n" + "<div>\n"
 					+ "  <form action=\"search.php\" method=\"get\">\n"
 					+ "       <input type=\"text\" name=\"text\" value=<?php echo \"\\\"\" . $_GET[\"text\"] . \"\\\"\" ; ?> > \n"
 					+ "              <input type=\"submit\" name=\"submit\" value=\"Search\">\n" + "              \n"
@@ -347,7 +353,7 @@ public class AqlHelp {
 					+ "    if (strpos($content, $string) !== false) {\n"
 					+ "        echo \"<a href=\\\"\" . $file . \"\\\">\" . $file . \"</a><br/>\";\n" + "    }\n" + "}\n"
 					+ "\n" + "?>\n" + "\n" + "\n" + "\n" + "</body></html>";
-			Util.writeFile(search, new File(dir, "search.php").getAbsolutePath());
+			Util.writeFile(search, new File(dir, "search.php").getAbsolutePath()); */
 			Map<Example, Set<AqlSyntax>> index = new THashMap<>();
 
 			StringBuffer examples = new StringBuffer("<html><head>" + css + "</head><body>");
@@ -419,25 +425,21 @@ public class AqlHelp {
 
 			StringBuffer logo = new StringBuffer("");
 			logo.append("<html><head>" + css + "</head><body>");
-			logo.append("\n<a href=\"https://categoricaldata.github.io/CQL/\" target=\"primary\">Help</a><br />");
-			logo.append("\n<br />");
-			logo.append("\n<a href=\"syntax.html\" target=\"tree\">Syntax</a><br />");
-			logo.append("\n<a href=\"options.html\" target=\"tree\">Options</a><br />");
-			logo.append("\n<a href=\"examples.html\" target=\"tree\">Examples</a><br />");
-			logo.append("\n<a href=\"search.php\" target=\"primary\">Search</a><br />");
+			logo.append("\n<a href=\"syntax.html\" target=\"tree\">Syntax</a><br >");
+			logo.append("\n<a href=\"options.html\" target=\"tree\">Options</a><br >");
+			logo.append("\n<a href=\"examples.html\" target=\"tree\">Examples</a><br >");
 
 			logo.append("\n<br />");
 			// logo.append("\n<a href=\"http://categorical.info\" target=\"_blank\">CI
 			// Website</a><br />");
-			logo.append("\n<a href=\"http://categoricaldata.net\" target=\"_blank\">CQL Website</a><br />");
+			logo.append("\n<a href=\"http://categoricaldata.net\" target=\"_blank\">CQL Website</a><br >");
 			logo.append(
-					"\n<a href=\"http://github.com/CategoricalData/CQL/wiki\" target=\"_blank\">CQL Wiki</a><br />");
+					"\n<a href=\"http://github.com/CategoricalData/CQL/wiki\" target=\"_blank\">CQL Wiki</a><br >");
 			logo.append("\n</body></html>");
 
 			StringBuffer main = new StringBuffer();
-			main.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Frameset//EN\"");
-			main.append("\n   \"http://www.w3.org/TR/html4/frameset.dtd\">");
-			main.append("\n<HTML>");
+			main.append("<!DOCTYPE HTML>");
+			main.append("\n<HTML lang=\"en\">");
 			main.append("\n<HEAD>");
 			main.append("\n<TITLE>CQL</TITLE>");
 			main.append(css);
@@ -447,7 +449,7 @@ public class AqlHelp {
 			main.append("\n      <FRAME src=\"logo.html\" name=\"logo\">");
 			main.append("\n      <FRAME src=\"syntax.html\" name=\"tree\">");
 			main.append("\n  </FRAMESET>");
-			main.append("\n  <FRAME src=\"https://categoricaldata.github.io/CQL\" name=\"primary\">");
+			main.append("\n  <FRAME src=\"\" name=\"primary\">");
 			main.append("\n</FRAMESET>");
 			main.append("\n</HTML>");
 
@@ -471,6 +473,8 @@ public class AqlHelp {
 				List<Pair<AqlTyping, Exp<?>>> ee = new ArrayList<>(z.get(k));
 				Collections.sort(ee, (x, y) -> x.second.getKeyword().compareTo(y.second.getKeyword()));
 
+				URL l = ClassLoader.getSystemResource("docs");
+				
 				for (Pair<AqlTyping, Exp<?>> pair : ee) {
 					if (pair.second.isVar()) {
 						continue;
@@ -479,12 +483,17 @@ public class AqlHelp {
 					AqlTyping g = pair.first;
 					Exp<?> e = pair.second;
 
-					String docFile = "docs/" + pair.second.getSyntax() + ".md";
+				//	String docFile = "docs/" + pair.second.getSyntax() + ".md";
 					String desc;
 					try {
-						desc = Util.readFile(new FileReader(new File(docFile)));
-					} catch (java.io.FileNotFoundException fnfe) {
-						System.out.println("Missing doc: " + docFile);
+						URI uuu = ClassLoader.getSystemResource("docs").toURI();
+						String vvv = new File(uuu).getAbsolutePath() + "/" + pair.second.getSyntax() + ".md";
+						
+				//		desc =  Util.readFile(new FileReader(new File(vvv)));
+						desc = Util.readFile(new FileReader(new File(vvv)));
+					} catch (java.lang.Exception fnfe) {
+						fnfe.printStackTrace();
+						//System.out.println("Missing doc: " + new File(vvv).getAbsolutePath());
 						desc = "TODO";
 					}
 					// Util.writeFile(desc, "docs/" + pair.second.getSyntax() + ".md");

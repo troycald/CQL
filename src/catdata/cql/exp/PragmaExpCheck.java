@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
+import javax.swing.JOptionPane;
 
 import catdata.Chc;
 import catdata.Pair;
@@ -115,8 +116,12 @@ public final class PragmaExpCheck<X, Y> extends PragmaExp {
 				Constraints q = C.eval(env, isC);
 				Collection<Pair<Integer, Row<String, Chc<X, Term<String, String, Sym, Fk, Att, String, String>>, Chc<String, String>>>> t = q
 						.triggers(J, env.defaults);
-				String outPath = (String) new AqlOptions(ops, env.defaults).getOrDefault(AqlOption.check_command_export_file);
-				if (!outPath.isBlank()) {
+				String outPath = (String) new AqlOptions(ops, env.defaults)
+						.getOrDefault(AqlOption.check_command_export_file);
+				Boolean warn = (Boolean) new AqlOptions(ops, env.defaults)
+						.getOrDefault(AqlOption.check_warn_instead_of_fail);
+				
+				if (!t.isEmpty() && !outPath.isBlank()) {
 					try {
 						Util.writeFile(printCsv(q, t, J), outPath);
 					} catch (Exception ex) {
@@ -124,10 +129,17 @@ public final class PragmaExpCheck<X, Y> extends PragmaExp {
 						throw new RuntimeException(ex);
 					}
 
-				} else {
-					if (!t.isEmpty()) {
-						throw new RuntimeException("Not satisfied.\n\n" + printTriggers(q, t, J));
-					}
+				}
+				if (!t.isEmpty() && !warn) {
+					throw new RuntimeException("Not satisfied.\n\n" + printTriggers(q, t, J));
+				} else if (!t.isEmpty()) {
+					String xxx = outPath.isBlank() ? "Set check_command_export_file=true to record failing rows" : ("See " + outPath + " for failing rows");
+					JOptionPane.showMessageDialog(null, "Not satisfied. " + xxx);
+					
+				} 
+				
+				if (t.isEmpty()) {
+					ok = true;
 				}
 			}
 
@@ -181,7 +193,8 @@ public final class PragmaExpCheck<X, Y> extends PragmaExp {
 			}
 
 			private String thePrintFn(
-					Row<String, Chc<X, Term<String, String, Sym, Fk, Att, String, String>>, Chc<String, String>> list, ED ed) {
+					Row<String, Chc<X, Term<String, String, Sym, Fk, Att, String, String>>, Chc<String, String>> list,
+					ED ed) {
 
 				return "\t" + Util.sep(list.asMap().entrySet(), ",  ",
 						x -> x.getKey() + " -> " + helper(x.getKey(), x.getValue(), ed));
@@ -232,9 +245,10 @@ public final class PragmaExpCheck<X, Y> extends PragmaExp {
 				return ret;
 			}
 
+			private boolean ok = false;
 			@Override
 			public String toString() {
-				return "Satisfies";
+				return ok ? "Satisfied" : "Not satisfied";
 			}
 
 		};
