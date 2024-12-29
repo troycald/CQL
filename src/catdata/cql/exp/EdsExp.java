@@ -53,6 +53,8 @@ public abstract class EdsExp extends Exp<Constraints> {
 		public EdsExpSql visitEdsExpSql(P params, R exp) throws E;
 
 		public EdsExpLearn visitEdsExpLearn(P params, R exp) throws E;
+		
+		public EdsExpInfer visitEdsExpInfer(P params, R exp) throws E;
 	}
 
 	public static interface EdsExpVisitor<R, P, E extends Exception> {
@@ -81,6 +83,8 @@ public abstract class EdsExp extends Exp<Constraints> {
 		public R visit(P param, EdsExpFromMySql exp) throws E;
 		
 		public R visit(P param, EdsExpLearn exp) throws E;
+
+		public R visit(P params, EdsExpInfer exp) throws E;
 
 	}
 	

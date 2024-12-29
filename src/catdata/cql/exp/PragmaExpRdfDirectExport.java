@@ -167,7 +167,7 @@ public class PragmaExpRdfDirectExport<X, Y> extends PragmaExp {
 	// TODO: add map
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder().append("export_rdf_direct_xml ").append(I).append(" ").append(" ");
+		final StringBuilder sb = new StringBuilder().append("export_rdf_direct_xml ").append(I).append(" ").append(file).append(" ");
 		if (!options.isEmpty()) {
 			sb.append(" {").append("\n\toptions").append(Util.sep(options, "\n\t\t", " = ")).append("}");
 		}

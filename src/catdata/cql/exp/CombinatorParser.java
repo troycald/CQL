@@ -468,8 +468,8 @@ public class CombinatorParser implements IAqlParser {
 				skolem = Parsers.tuple(token("skolem"), inst_ref.lazy()).map(x -> new InstExpSkolem(x.b)),
 				
 			//	excel = Parsers.tuple(token("import_excel"), ident, ident).map(x -> new InstExpExcel(x.b, x.c)),
-						
-						distinct = Parsers.tuple(token("distinct"), inst_ref.lazy()).map(x -> new InstExpDistinct(x.b)),
+				core = Parsers.tuple(token("core"), inst_ref.lazy()).map(x -> new InstExpCore(x.b)),		
+				distinct = Parsers.tuple(token("distinct"), inst_ref.lazy()).map(x -> new InstExpDistinct(x.b)),
 				anon = Parsers.tuple(token("anonymize"), inst_ref.lazy()).map(x -> new InstExpAnonymize(x.b)),
 				pivot = Parsers
 						.tuple(token("pivot"), inst_ref.lazy(), options.between(token("{"), token("}")).optional())
@@ -496,7 +496,7 @@ public class CombinatorParser implements IAqlParser {
 
 		Parser ret = Parsers.or(queryQuotientExpRaw(), sigma_chase, l2, pi, frozen, instExpRand(), instExpCoEq(),
 				instExpRdfAll(), instExpXmlAll(), /*instExpMd(),*/ instExpJsonAll(), chase, instExpJdbc(), empty,
-				instExpRaw(), var, sigma, spanify, delta, ms_sql3, distinct, eval, colimInstExp(), dom, cd, anon,
+				instExpRaw(), var, sigma, spanify, delta, core, ms_sql3, distinct, eval, colimInstExp(), dom, cd, anon,
 				except, pivot, cod, skolem, instExpCsv(), coeval, /* excel, */ instExpJdbcDirect(), instExpTinkerpop(), parens(inst_ref));
 
 		inst_ref.set(ret);
@@ -1110,6 +1110,11 @@ public class CombinatorParser implements IAqlParser {
 				token("}")).map(x -> new EdsExpRaw(x.a, x.b, x.c, x.d));
 	}
 
+	private static Parser<Quad<String, String, String, String>> tinyQuad() {
+		return Parsers.tuple(ident.followedBy(token(".")), ident.followedBy(token("->")), ident.followedBy(token(".")), ident)
+		.map(z->new Quad<>(z.a,z.b,z.c,z.d));
+	}
+	
 	private static Parser<EdsExp> edsExp() {
 		Parser<EdsExp> var = ident.map(EdsExpVar::new),
 				empty = Parsers.tuple(token("empty"), token(":"), sch_ref.lazy())
@@ -1131,12 +1136,14 @@ public class CombinatorParser implements IAqlParser {
 								x -> new EdsExpFromMySql(x.b, x.c)),		
 						
 				learn = Parsers.tuple(token("learn"), inst_ref.lazy(), inst_ref.lazy()).map(x -> new EdsExpLearn(x.b, x.c)),
+				
+				infer = Parsers.tuple(token("infer"), eds_ref.lazy().followedBy(token("->")), eds_ref.lazy().followedBy(token(":")), sch_ref.lazy(), tinyQuad().many().between(token("{"), token("}")) ).map(x -> new EdsExpInfer(x.b, x.c, x.d, x.e)),
 						
 				incl = Parsers
 						.tuple(token("include"), sch_ref.lazy(), ident, ident,
 								options.between(token("{"), token("}")).optional())
 						.map(x -> new EdsExpInclude(x.b, x.c, x.d, Util.newIfNull(x.e)));
-		Parser<EdsExp> ret = Parsers.or(var, learn, fc, ms_sql5, oracle, mysql, edsExpRaw(), tp, empty, edsExpRaw(), sql, sqlNull, incl,
+		Parser<EdsExp> ret = Parsers.or(var, learn, fc, ms_sql5, infer, oracle, mysql, edsExpRaw(), tp, empty, edsExpRaw(), sql, sqlNull, incl,
 				edsSigma);
 		eds_ref.set(ret);
 		return ret;

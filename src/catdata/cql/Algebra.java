@@ -381,6 +381,14 @@ public abstract class Algebra<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> /* implements
 		}
 		return new IteratorIterable<>(it, false);
 	}
+	
+	public Iterable<Pair<En,X>> allXs0() {
+		IteratorChain<Pair<En,X>> it = new IteratorChain<>();
+		for (En en : schema().ens) {
+			it.addIterator(Iterators.transform(en(en).iterator(),z->new Pair<>(en,z)));
+		}
+		return new IteratorIterable<>(it, false);
+	}
 
 	/**
 	 * @return only equations for instance part (no typeside, no schema)

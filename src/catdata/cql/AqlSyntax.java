@@ -53,9 +53,9 @@ public enum AqlSyntax {
   QueryExpFromEds, QueryExpCompose, QueryExpDeltaCoEval, QueryExpDeltaEval, QueryExpId, QueryExpVar, QueryExpRaw, QueryExpRext,
   QueryExpRawSimple, QueryExpFromCoSpan, SchExpCod, SchExpMsQuery, SchExpMsCatalog, EdsExpFromMsCatalog, SchExpRdf, SchExpDom, SchExpSrc, SchExpDst, SchExpEmpty, SchExpInst,
   SchExpPivot, SchExpVar, SchExpColim, SchExpRaw, SchExpJdbcAll, TransExpDiff, TransExpDiffReturn, TransExpCoEval, SchExpFromMsCatalog,
-  TransExpCoEvalEvalCoUnit, TransExpCoEvalEvalUnit, TransExpDelta, TransExpDistinct, TransExpEval, TransExpId,
+  TransExpCoEvalEvalCoUnit, TransExpCoEvalEvalUnit, TransExpDelta, TransExpDistinct, TransExpEval, TransExpId, EdsExpInfer,
   TransExpSigma, TransExpSigmaDeltaCounit, TransExpSigmaDeltaUnit, TransExpVar, TransExpCompose, TransExpCsv, SchExpUnit, QueryExpFromInst,
-  TransExpDistinct2, TransExpJdbc, TransExpPi, TransExpRaw, TransExpFrozen, TyExpEmpty, TyExpSch, TyExpVar, TyExpRaw,
+  TransExpDistinct2, TransExpJdbc, TransExpPi, TransExpRaw, TransExpFrozen, TyExpEmpty, TyExpSch, TyExpVar, TyExpRaw, InstExpCore,
   TyExpSql  ,  ApgTyExpVar, ApgInstExpVar, ApgTransExpVar ,  ApgTyExpRaw, ApgInstExpRaw, ApgTransExpRaw , SchExpPrefix, EdsExpLearn, QueryExpChase, QueryExpReformulate, TransExpSubseteq   ;
 
 }

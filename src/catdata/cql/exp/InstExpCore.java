@@ -8,17 +8,17 @@ import java.util.function.Consumer;
 
 import catdata.Pair;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Instance;
 import catdata.cql.Kind;
-import catdata.cql.AqlOptions.AqlOption;
-import catdata.cql.fdm.DistinctInstance;
+import catdata.cql.fdm.SubInstance;
 
-public final class InstExpDistinct<Gen, Sk, X, Y> extends InstExp<Gen, Sk, X, Y> {
+public final class InstExpCore<Gen, Sk, X, Y> extends InstExp<Pair<String, X>, Sk, Pair<String, X>, Y>  {
 
 	public final InstExp<Gen, Sk, X, Y> I;
 
 	@Override
-	public void mapSubExps(Consumer<Exp<?>> f) {
+	public void mapSubExps(Consumer<Exp<?>> f) { 
 		I.map(f);
 	}
 
@@ -36,7 +36,7 @@ public final class InstExpDistinct<Gen, Sk, X, Y> extends InstExp<Gen, Sk, X, Y>
 		return Collections.emptyMap();
 	}
 
-	public InstExpDistinct(InstExp<Gen, Sk, X, Y> i) {
+	public InstExpCore(InstExp<Gen, Sk, X, Y> i) {
 		I = i;
 	}
 
@@ -46,19 +46,19 @@ public final class InstExpDistinct<Gen, Sk, X, Y> extends InstExp<Gen, Sk, X, Y>
 	}
 
 	@Override
-	public synchronized Instance<String, String, Sym, Fk, Att, Gen, Sk, X, Y> eval0(AqlEnv env, boolean isC) {
+	public synchronized SubInstance<String, String, Sym, Fk, Att, Gen, Sk, X, Y> eval0(AqlEnv env, boolean isC) {
 		Instance<String, String, Sym, Fk, Att, Gen, Sk, X, Y> ii = I.eval(env, isC);
 		if (isC) {
 			throw new IgnoreException();
 		}
 		AqlOptions ops = env.defaults;
 
-		return new DistinctInstance<>(ii, ops);
+		return SubInstance.subs(ii, ops).second;
 	}
 
 	@Override
 	public String toString() {
-		return "distinct " + I;
+		return "core " + I;
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public final class InstExpDistinct<Gen, Sk, X, Y> extends InstExp<Gen, Sk, X, Y>
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		InstExpDistinct<?, ?, ?, ?> other = (InstExpDistinct<?, ?, ?, ?>) obj;
+		InstExpCore<?, ?, ?, ?> other = (InstExpCore<?, ?, ?, ?>) obj;
 		return I.equals(other.I);
 	}
 

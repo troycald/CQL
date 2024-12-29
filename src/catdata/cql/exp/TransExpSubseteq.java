@@ -53,7 +53,7 @@ public class TransExpSubseteq<Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2> extends Tran
 		var q1 = Q1.eval(env, isCompileTime);
 		var q2 = Q2.eval(env, isCompileTime);
 		
-		Transform t = QueryExpReformulate.hom(q1, q2);
+		Transform<String, String, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2> t = QueryExpReformulate.hom(q1, q2);
 		if (t == null) {
 			throw new RuntimeException("No hom exists"); 
 		}

@@ -25,6 +25,7 @@ import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Constraints;
 import catdata.cql.Eq;
 import catdata.cql.Frozen;
+import catdata.cql.Instance;
 import catdata.cql.Kind;
 import catdata.cql.Query;
 import catdata.cql.Query.Agg;
@@ -271,8 +272,6 @@ public class QueryExpReformulate extends QueryExp {
 			Query<String, String, Sym, Fk, Att, String, Fk, Att> sc = Query.makeQuery(ens, atts, Collections.emptyMap(),
 					Collections.emptyMap(), q.src, q.dst, AqlOptions.initialOptions);
 
-			
-
 			if (null == hom(sc, QueryExpChase.chase(q, c))) {
 				Util.anomaly(); // subsquery should be syntactically part of universal plan
 			}
@@ -310,6 +309,80 @@ public class QueryExpReformulate extends QueryExp {
 		}
 
 		return ret;
+	}
+
+	public static <Ty, En, Sym, Fk, Att, Gen1, Sk1, X1, Y1, Gen2, Sk2, X2, Y2> Transform<Ty, En, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2> hom(
+			Instance<Ty, En, Sym, Fk, Att, Gen1, Sk1, X1, Y1> i1,
+			Instance<Ty, En, Sym, Fk, Att, Gen2, Sk2, X2, Y2> i2) {
+
+		// var i1 = q1.ens.get(name);
+		// var i2 = q2.ens.get(name);
+
+		List<Map<Chc<Gen1, Sk1>, Chc<Gen2, Sk2>>>[] n1 = new List[] {
+				Collections.singletonList(Collections.emptyMap()) };
+
+		boolean[] br = { false };
+		i1.gens().forEach((g, t) -> {
+			int[] rr = { 0 };
+			List<Map<Chc<Gen1, Sk1>, Chc<Gen2, Sk2>>> ll = new LinkedList<>();
+			i2.gens().forEach((g0, t0) -> {
+				if (t.equals(t0)) {
+					ll.addAll(extend(n1[0], Chc.inLeft(g), Chc.inLeft(g0)));
+					rr[0]++;
+				}
+			});
+			if (rr[0] == 0) {
+				br[0] = true;
+			}
+			n1[0] = ll;
+		});
+		if (br[0]) {
+			return null;
+		}
+		i1.sks().forEach((g, t) -> {
+			int[] rr = { 0 };
+			List<Map<Chc<Gen1, Sk1>, Chc<Gen2, Sk2>>> ll = new LinkedList<>();
+			i2.sks().forEach((g0, t0) -> {
+				if (t.equals(t0)) {
+					ll.addAll(extend(n1[0], Chc.inRight(g), Chc.inRight(g0)));
+					rr[0]++;
+				}
+			});
+			if (rr[0] == 0) {
+				br[0] = true;
+			}
+			n1[0] = ll;
+		});
+		if (br[0]) {
+			return null;
+		}
+
+		for (var cand : n1[0]) {
+
+			Map<Gen1, Term<Void, En, Void, Fk, Void, Gen2, Void>> m1 = new HashMap<>();
+			Map<Sk1, Term<Ty, En, Sym, Fk, Att, Gen2, Sk2>> m2 = new HashMap<>();
+			for (var x : cand.entrySet()) {
+				if (x.getKey().left) {
+					m1.put(x.getKey().l, Term.Gen(x.getValue().l));
+				} else {
+					m2.put(x.getKey().r, Term.Sk(x.getValue().r));
+				}
+			}
+
+			BiFunction<Gen1, En, Term<Void, En, Void, Fk, Void, Gen2, Void>> f = (n, t) -> m1.get(n);
+			BiFunction<Sk1, Ty, Term<Ty, En, Sym, Fk, Att, Gen2, Sk2>> g = (n, t) -> m2.get(n);
+			try {
+				return new LiteralTransform<Ty, En, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2>(f, g, i1, i2,
+						false);
+
+			} catch (Exception ex) {
+
+				// ex.printStackTrace();
+
+			}
+		}
+		return null;
+
 	}
 
 	public static Transform hom(Query<String, String, Sym, Fk, Att, String, Fk, Att> q1,
@@ -351,7 +424,7 @@ public class QueryExpReformulate extends QueryExp {
 				List<Map<Chc<String, String>, Chc<String, String>>> ll = new LinkedList<>();
 				i2.sks().forEach((g0, t0) -> {
 					if (t.equals(t0)) {
-						ll.addAll(extend(n1[0], Chc.inLeft(g), Chc.inLeft(g0)));
+						ll.addAll(extend(n1[0], Chc.inRight(g), Chc.inRight(g0)));
 						rr[0]++;
 					}
 				});
@@ -429,13 +502,13 @@ public class QueryExpReformulate extends QueryExp {
 				if (i != 0) {
 					return i;
 				}
-				return Integer.compare(Util.get0(o1.ens.values()).size(), Util.get0(o2.ens.values()).size()); 
+				return Integer.compare(Util.get0(o1.ens.values()).size(), Util.get0(o2.ens.values()).size());
 			}
 
 		});
 
-	//System.out.println(	Util.sep(qs, "\n") );
-		
+		// System.out.println( Util.sep(qs, "\n") );
+
 		return qs.get(idx);
 	}
 
@@ -467,7 +540,8 @@ public class QueryExpReformulate extends QueryExp {
 		if (getClass() != obj.getClass())
 			return false;
 		QueryExpReformulate other = (QueryExpReformulate) obj;
-		return Objects.equals(C, other.C) && Objects.equals(Q, other.Q) && Objects.equals(T, other.T) && Objects.equals(idx, other.idx);
+		return Objects.equals(C, other.C) && Objects.equals(Q, other.Q) && Objects.equals(T, other.T)
+				&& Objects.equals(idx, other.idx);
 	}
 
 	@Override

@@ -79,6 +79,8 @@ public class QueryExpChase extends QueryExp {
 
 	}
 
+	static int[] i = { 0 };
+
 	static Query<String, String, Sym, Fk, Att, String, Fk, Att> chase(
 			Query<String, String, Sym, Fk, Att, String, Fk, Att> q, Constraints c) {
 		Map<String, Triple<LinkedHashMap<String, Chc<String, String>>, Collection<Eq<String, String, Sym, Fk, Att, String, String>>, AqlOptions>> ens = new HashMap<>();
@@ -86,7 +88,6 @@ public class QueryExpChase extends QueryExp {
 
 		Map<Object, String> m1 = new HashMap<>();
 		Map<Object, String> m2 = new HashMap<>();
-		int[] i = { 0 };
 		Map<Att, Chc<Term<String, String, Sym, Fk, Att, String, String>, Agg<String, String, Sym, Fk, Att>>> atts = new HashMap<>();
 		for (var b : q.ens.entrySet()) {
 

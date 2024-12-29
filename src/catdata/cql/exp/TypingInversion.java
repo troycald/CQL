@@ -2178,8 +2178,7 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 	}
 
 	@Override
-	public <X, Y> PragmaExpRdfDirectExport<X, Y> visitPragmaExpRdfDirectExport(Unit params, AqlTyping exp)
-			{
+	public <X, Y> PragmaExpRdfDirectExport<X, Y> visitPragmaExpRdfDirectExport(Unit params, AqlTyping exp) {
 		SchExp s = InstExpRdfAll.makeSch();
 		TyExp t = new TyExpRdf();
 		InstExp<String, String, X, Y> i = (InstExp<String, String, X, Y>) (Object) new InstExpVar("i");
@@ -2398,7 +2397,7 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 		exp.prog.exps.put("t", new TyExpEmpty());
 		exp.prog.exps.put("c", new EdsExpRaw(s1, Collections.emptyList(), Collections.emptyList(), Unit.unit));
 		exp.prog.exps.put("m", m);
-		
+
 		return new EdsExpSigma(m, c);
 	}
 
@@ -2471,7 +2470,7 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 		exp.defs.insts.put("i", s1);
 		return new QueryExpFromInst(i);
 	}
-	
+
 	@Override
 	public EdsExpLearn visitEdsExpLearn(Unit params, AqlTyping exp) {
 		SchExp s1 = new SchExpVar("s1");
@@ -2482,7 +2481,7 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 		exp.defs.tys.put("t", Unit.unit);
 		exp.defs.insts.put("i1", s1);
 		exp.defs.insts.put("i2", s1);
-		
+
 		return new EdsExpLearn(i, j);
 	}
 
@@ -2494,9 +2493,9 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 		QueryExp q = new QueryExpVar("q");
 		exp.defs.schs.put("s1", t);
 		exp.defs.schs.put("s2", t);
-		
+
 		exp.defs.tys.put("t", Unit.unit);
-		exp.defs.qs.put("q", new Pair<>(s1,s2));
+		exp.defs.qs.put("q", new Pair<>(s1, s2));
 		exp.defs.eds.put("c", s1);
 		exp.prog.exps.put("s1", new SchExpEmpty(t));
 		exp.prog.exps.put("s2", new SchExpEmpty(t));
@@ -2513,9 +2512,9 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 		QueryExp q = new QueryExpVar("q");
 		exp.defs.schs.put("s1", t);
 		exp.defs.schs.put("s2", t);
-		
+
 		exp.defs.tys.put("t", Unit.unit);
-		exp.defs.qs.put("q", new Pair<>(s1,s2));
+		exp.defs.qs.put("q", new Pair<>(s1, s2));
 		exp.defs.eds.put("c", s1);
 		exp.prog.exps.put("s1", new SchExpEmpty(t));
 		exp.prog.exps.put("s2", new SchExpEmpty(t));
@@ -2535,15 +2534,32 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 
 		exp.defs.schs.put("s1", t);
 		exp.defs.schs.put("s2", t);
-		
+
 		exp.defs.tys.put("t", Unit.unit);
-		exp.defs.qs.put("q1", new Pair<>(s1,s2));
-		exp.defs.qs.put("q2", new Pair<>(s1,s2));
-		
+		exp.defs.qs.put("q1", new Pair<>(s1, s2));
+		exp.defs.qs.put("q2", new Pair<>(s1, s2));
+
 		exp.prog.exps.put("s1", new SchExpEmpty(t));
 		exp.prog.exps.put("s2", new SchExpEmpty(t));
 		exp.prog.exps.put("t", new TyExpEmpty());
-		
+
 		return new TransExpSubseteq(q1, q2);
+	}
+
+	@Override
+	public <Gen, Sk, X, Y> InstExpCore<Gen, Sk, X, Y> visitInstExpCore(Unit param, AqlTyping exp) {
+		SchExp s = new SchExpVar("s");
+		TyExp t = new TyExpVar("t");
+		InstExp i = new InstExpVar("i");
+		exp.defs.schs.put("s", t);
+		exp.defs.tys.put("t", Unit.unit);
+		exp.defs.insts.put("i", s);
+		return new InstExpCore(i);
+	}
+
+	@Override
+	public EdsExpInfer visitEdsExpInfer(Unit params, AqlTyping exp) throws RuntimeException {
+		System.exit(666);
+		return null;
 	}
 }

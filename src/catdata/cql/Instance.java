@@ -630,7 +630,7 @@ public abstract class Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> implements S
 			}
 		});
 
-	}
+	} 
 
 	private Map<Gen, Pair<Integer, En>> m1 = new HashMap<>();
 	private Map<Sk, Pair<Integer, Ty>> m2 = new HashMap<>();

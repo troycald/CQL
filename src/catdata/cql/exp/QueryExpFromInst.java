@@ -60,23 +60,36 @@ public class QueryExpFromInst extends QueryExp {
 	@Override
 	protected Query<String, String, Sym, Fk, Att, String, Fk, Att> eval0(AqlEnv env, boolean isCompileTime) {
 		Instance i = (Instance) I.eval(env, isCompileTime);
-		
+
 //		Pair p = i.algebra().intifyX(0);
 
-		Map<String, Triple<LinkedHashMap<String, Chc<String, String>>, Collection<Eq<String, String, Sym, Fk, Att, String, String>>, AqlOptions>> m
-		 = new HashMap<>();
-		LinkedHashMap<String, Chc<String, String>> gens = new LinkedHashMap<>();
-		List<Eq<String, String, Sym, Fk, Att, String, String>> eqs = new LinkedList<>();
-		
-		i.gens().forEach((g,t)->{gens.put(g.toString(), Chc.inLeft(t.toString()));});
-		i.sks().forEach((g,t)->{gens.put(g.toString(), Chc.inRight(t.toString()));});
-		i.eqs((l,r)->{eqs.add(new Eq(Collections.emptyMap(),((Term)l).mapGenSk(e->e.toString(),e->e.toString()),((Term)r).mapGenSk(e->e.toString(),e->e.toString())));});
-		
-		m.put("", new Triple<>(gens, eqs, env.defaults));
-		
-		Query<String, String, Sym, Fk, Att, String, Fk, Att> ret = new Query<String, String, Sym, Fk, Att, String, Fk, Att>(
-				Collections.emptyMap(), Collections.emptyMap(), m, Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), i.schema(), Schema.unit(i.schema().typeSide),
-				env.defaults);
+		return toQuery(env.defaults, i);
+	}
+
+	public static <Ty, En1, Sym, Fk1, Att1, En2, Fk2, Att2, Gen, Sk, X, Y> Query<Ty, En1, Sym, Fk1, Att1, String, Fk2, Att2> toQuery(
+			AqlOptions ops, Instance<Ty, En1, Sym, Fk1, Att1, Gen, Sk, X, Y> i) {
+		Map<String, Triple<LinkedHashMap<String, Chc<En1, Ty>>, Collection<Eq<Ty, En1, Sym, Fk1, Att1, String, String>>, AqlOptions>> m = new HashMap<>();
+		LinkedHashMap<String, Chc<En1, Ty>> gens = new LinkedHashMap<>();
+		List<Eq<Ty, En1, Sym, Fk1, Att1, String, String>> eqs = new LinkedList<>();
+
+		i.gens().forEach((g, t) -> {
+			gens.put(g.toString(), Chc.inLeft(t));
+		});
+		i.sks().forEach((g, t) -> {
+			gens.put(g.toString(), Chc.inRight(t));
+		});
+		i.eqs((l, r) -> {
+			Term<Ty, En1, Sym, Fk1, Att1, String, String> l2 = l.mapGenSk(e -> e.toString(), e -> e.toString());
+			Term<Ty, En1, Sym, Fk1, Att1, String, String> r2 = r.mapGenSk(e -> e.toString(), e -> e.toString());
+			
+			eqs.add(new Eq<>(Collections.emptyMap(), l2, r2));
+		});
+
+		m.put("", new Triple<>(gens, eqs, ops));
+
+		Query<Ty, En1, Sym, Fk1, Att1, String, Fk2, Att2> ret = new Query<Ty, En1, Sym, Fk1, Att1, String, Fk2, Att2>(Collections.emptyMap(),
+				Collections.emptyMap(),  m , Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(),
+				i.schema(), Schema.unit(i.schema().typeSide), ops);
 		//
 		return ret;
 	}

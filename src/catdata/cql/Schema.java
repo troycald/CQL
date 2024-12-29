@@ -137,8 +137,8 @@ public final class Schema<Ty, En, Sym, Fk, Att> implements Semantics {
 				typeSide.syms, typeSide.js.java_tys, ens, atts, fks, Collections.emptyMap(), Collections.emptyMap());
 	}
 
-	public static Schema<String, String, catdata.cql.exp.Sym, catdata.cql.exp.Fk, catdata.cql.exp.Att> unit(
-			TypeSide<String, catdata.cql.exp.Sym> t) {
+	public static <Ty, Sym, Fk, Att> Schema<Ty, String, Sym, Fk, Att> unit(
+			TypeSide<Ty, Sym> t) {
 		return new Schema<>(t, Collections.singleton(""), Collections.emptyMap(), Collections.emptyMap(),
 				Collections.emptySet(), (DP) t.semantics(), false);
 	}
