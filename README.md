@@ -15,8 +15,8 @@ https://www.categoricaldata.net/download.php
 
 Quick build guide:
 - create a new java project
-- add the src/main/java folder as a source folder
-- add resources as a separate source folder
+- add the src folder as a source folder
+- add resources/open as a separate source folder
 - add lib/* to the classpath as external jar files
 - run catdata.ide.IDE as the main class
 
