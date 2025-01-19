@@ -130,7 +130,7 @@ public class SubInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y>
 			}
 			try {
 				var i = new SubInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y>(s, I, ops);
-				Transform<Ty, En, Sym, Fk, Att, Gen, Sk, Pair<En, X>, Sk, X, Y, Pair<En, X>, Y> t = QueryExpReformulate.hom(I, i);
+				Transform<Ty, En, Sym, Fk, Att, Gen, Sk, Pair<En, X>, Sk, X, Y, Pair<En, X>, Y> t = QueryExpReformulate.homI(I, i);
 
 				if (t != null) {
 					return false;
@@ -163,7 +163,7 @@ public class SubInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y>
 //			System.out.println("trying " + Util.sep(s, " "));
 			try {
 				var i = new SubInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y>(s, I, ops);
-				Transform<Ty, En, Sym, Fk, Att, Gen, Sk, Pair<En, X>, Sk, X, Y, Pair<En, X>, Y> t = QueryExpReformulate.hom(I, i);
+				Transform<Ty, En, Sym, Fk, Att, Gen, Sk, Pair<En, X>, Sk, X, Y, Pair<En, X>, Y> t = QueryExpReformulate.homI(I, i);
 				
 				if (t != null  && core0(i, ops) ) {
 					return new Pair<>(t, i);

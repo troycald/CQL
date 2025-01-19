@@ -1136,6 +1136,7 @@ public class CombinatorParser implements IAqlParser {
 								x -> new EdsExpFromMySql(x.b, x.c)),		
 						
 				learn = Parsers.tuple(token("learn"), inst_ref.lazy(), inst_ref.lazy()).map(x -> new EdsExpLearn(x.b, x.c)),
+				all = Parsers.tuple(token("all"), inst_ref.lazy(), sch_ref.lazy()).map(x ->new EdsExpAll(x.b, x.c)),
 				
 				infer = Parsers.tuple(token("infer"), eds_ref.lazy().followedBy(token("->")), eds_ref.lazy().followedBy(token(":")), sch_ref.lazy(), tinyQuad().many().between(token("{"), token("}")) ).map(x -> new EdsExpInfer(x.b, x.c, x.d, x.e)),
 						
@@ -1143,7 +1144,7 @@ public class CombinatorParser implements IAqlParser {
 						.tuple(token("include"), sch_ref.lazy(), ident, ident,
 								options.between(token("{"), token("}")).optional())
 						.map(x -> new EdsExpInclude(x.b, x.c, x.d, Util.newIfNull(x.e)));
-		Parser<EdsExp> ret = Parsers.or(var, learn, fc, ms_sql5, infer, oracle, mysql, edsExpRaw(), tp, empty, edsExpRaw(), sql, sqlNull, incl,
+		Parser<EdsExp> ret = Parsers.or(var, learn, fc, ms_sql5, infer, oracle, all, mysql, edsExpRaw(), tp, empty, edsExpRaw(), sql, sqlNull, incl,
 				edsSigma);
 		eds_ref.set(ret);
 		return ret;

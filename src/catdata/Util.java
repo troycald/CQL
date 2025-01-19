@@ -40,7 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 
 import com.google.common.collect.Iterators;
-
+import com.google.common.collect.Sets;
 
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.set.hash.THashSet;
@@ -1024,6 +1024,10 @@ public class Util {
 			sets.add(set);
 		}
 		return sets;
+	}
+	
+	public static <T> Set<Set<T>> powerSet2(Set<T> originalSet) {
+		return Sets.powerSet(originalSet);
 	}
 	
 	

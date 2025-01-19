@@ -174,6 +174,40 @@ public class ED {
 		return new LiteralTransform<>((x, t) -> Term.Gen(x), (x, t) -> Term.Sk(x), I, J, true);
 	}
 
+	public LiteralInstance<String, String, Sym, Fk, Att, String, String, Integer, Chc<String, Pair<Integer, Att>>> frontQ(
+			Schema<String, String, Sym, Fk, Att> sch) {
+
+		validate(sch);
+		Collage<String, String, Sym, Fk, Att, String, String> col = new CCollage<>(sch.collage());
+
+		Set<Pair<Term<String, String, Sym, Fk, Att, String, String>, Term<String, String, Sym, Fk, Att, String, String>>> eqs0 = (new THashSet<>());
+
+		for (Entry<String, Chc<String, String>> p : As.entrySet()) {
+			String gen = p.getKey();
+			Chc<String, String> ty = p.getValue();
+			if (ty.left) {
+				col.sks().put(gen, ty.l);
+			} else {
+				col.gens().put(gen, ty.r);
+			}
+		}
+		for (Pair<Term<String, String, Sym, Fk, Att, Void, Void>, Term<String, String, Sym, Fk, Att, Void, Void>> eq0 : Awh) {
+			eqs0.add(new Pair<>(freeze(eq0.first), freeze(eq0.second)));
+			col.eqs().add(new Eq<>(null, freeze(eq0.first), freeze(eq0.second)));
+		}
+		col.validate();
+
+		InitialAlgebra<String, String, Sym, Fk, Att, String, String> initial = new InitialAlgebra<>(options, sch, col,
+				(y) -> y, (x, y) -> y);
+		LiteralInstance<String, String, Sym, Fk, Att, String, String, Integer, Chc<String, Pair<Integer, Att>>> x = new LiteralInstance<>(
+				sch, col.gens(), col.sks(), eqs0, initial.dp(), initial,
+				(Boolean) options.getOrDefault(AqlOption.require_consistency),
+				(Boolean) options.getOrDefault(AqlOption.allow_java_eqs_unsafe));
+
+		x.validate();
+		return x;
+	}
+	
 	public LiteralInstance<String, String, Sym, Fk, Att, String, String, Integer, Chc<String, Pair<Integer, Att>>> front(
 			Schema<String, String, Sym, Fk, Att> sch) {
 		validate(sch);
@@ -467,7 +501,6 @@ public class ED {
 			}
 			Ewh = z2;
 		}
-	
 
 		is.put(FRONT, new Triple<>(As, freeze(Awh), options));
 		Map<String, Chc<String, String>> AsEs = new THashMap<>();
@@ -632,8 +665,7 @@ public class ED {
 		}
 	}
 
-	public ED( Map<String, Chc<String, String>> as,
-			Map<String, Chc<String, String>> es,
+	public ED(Map<String, Chc<String, String>> as, Map<String, Chc<String, String>> es,
 			Set<Pair<Term<String, String, Sym, Fk, Att, Void, Void>, Term<String, String, Sym, Fk, Att, Void, Void>>> awh,
 			Set<Pair<Term<String, String, Sym, Fk, Att, Void, Void>, Term<String, String, Sym, Fk, Att, Void, Void>>> ewh,
 			boolean isUnique, AqlOptions options) {
@@ -646,8 +678,9 @@ public class ED {
 		if (isUnique && Es.isEmpty()) {
 			Util.anomaly();
 		}
-	//	if (!Collections.disjoint(As.keySet(), Es.keySet())) {
-	//		throw new RuntimeException("The forall and exists clauses do not use disjoint variables.");
+		// if (!Collections.disjoint(As.keySet(), Es.keySet())) {
+		// throw new RuntimeException("The forall and exists clauses do not use disjoint
+		// variables.");
 //		}
 
 		is.put(FRONT, new Triple<>(As, freeze(Awh), options));
@@ -763,11 +796,11 @@ public class ED {
 		if (t.gen() != null) {
 			return "[" + t + "]";
 		} else if (t.att() != null) {
-			return "[" + t + "]";		
+			return "[" + t + "]";
 		}
 		return t.toString();
 	}
-	
+
 	public String toSql(Schema<String, String, Sym, Fk, Att> sch) {
 		StringBuffer sb = new StringBuffer();
 		for (var x : Util.alphabetical(Es.entrySet())) {
@@ -779,7 +812,8 @@ public class ED {
 			String lhs = "\n\tFROM " + Util.sep(Util.alphabetical(As.entrySet()), ",\n\t\t",
 					kv -> kv.getValue().r + " AS [" + kv.getKey() + "]");
 			String lhs2 = Awh.isEmpty() ? ""
-					: ("\tWHERE " + Util.sep(Util.alphabetical(Awh), " and\n\t\t", j -> toSql(j.first) + "=" + toSql(j.second)));
+					: ("\tWHERE " + Util.sep(Util.alphabetical(Awh), " and\n\t\t",
+							j -> toSql(j.first) + "=" + toSql(j.second)));
 
 			String s = "\n\tSELECT ";
 
@@ -795,7 +829,7 @@ public class ED {
 				}
 			}
 			for (Att att : sch.attsFrom(y)) {
-				if (Util.lookupNull(lx, att) == null) 
+				if (Util.lookupNull(lx, att) == null)
 					lx.add(new Pair<>(att, "NULL AS [" + att + "]"));
 			}
 			lx.sort(Util.AlphabeticalComparator);

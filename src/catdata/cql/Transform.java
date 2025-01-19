@@ -106,9 +106,9 @@ public abstract class Transform<Ty, En, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, 
 					throw new RuntimeException("(Source/Target) Cannot equate terms at different type: " + a + " and " + rhs);
 				}
 			//	dst().validateMore();
-				//src().validateMore();
+			//	src().validateMore();
 				
-//				System.out.println("checking " + lhs + " = " + rhs);
+			//	System.out.println("checking " + lhs + " = " + rhs);
 				
 				boolean ok = dst().dp().eq(null, lhs, rhs);
 				if (!ok) {

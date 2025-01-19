@@ -311,7 +311,7 @@ public class QueryExpReformulate extends QueryExp {
 		return ret;
 	}
 
-	public static <Ty, En, Sym, Fk, Att, Gen1, Sk1, X1, Y1, Gen2, Sk2, X2, Y2> Transform<Ty, En, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2> hom(
+	public static <Ty, En, Sym, Fk, Att, Gen1, Sk1, X1, Y1, Gen2, Sk2, X2, Y2> Transform<Ty, En, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2> homI(
 			Instance<Ty, En, Sym, Fk, Att, Gen1, Sk1, X1, Y1> i1,
 			Instance<Ty, En, Sym, Fk, Att, Gen2, Sk2, X2, Y2> i2) {
 
@@ -372,9 +372,13 @@ public class QueryExpReformulate extends QueryExp {
 			BiFunction<Gen1, En, Term<Void, En, Void, Fk, Void, Gen2, Void>> f = (n, t) -> m1.get(n);
 			BiFunction<Sk1, Ty, Term<Ty, En, Sym, Fk, Att, Gen2, Sk2>> g = (n, t) -> m2.get(n);
 			try {
-				return new LiteralTransform<Ty, En, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2>(f, g, i1, i2,
+				
+				var xxx = new LiteralTransform<Ty, En, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2>(f, g, i1, i2,
 						false);
+				xxx.validate(false);
 
+				return xxx;
+				
 			} catch (Exception ex) {
 
 				// ex.printStackTrace();

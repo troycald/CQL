@@ -86,6 +86,8 @@ public abstract class EdsExp extends Exp<Constraints> {
 
 		public R visit(P params, EdsExpInfer exp) throws E;
 
+		public R visit(P params, EdsExpAll exp);
+
 	}
 	
 	
