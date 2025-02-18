@@ -371,14 +371,15 @@ public class QueryExpReformulate extends QueryExp {
 
 			BiFunction<Gen1, En, Term<Void, En, Void, Fk, Void, Gen2, Void>> f = (n, t) -> m1.get(n);
 			BiFunction<Sk1, Ty, Term<Ty, En, Sym, Fk, Att, Gen2, Sk2>> g = (n, t) -> m2.get(n);
+			
 			try {
-				
+
 				var xxx = new LiteralTransform<Ty, En, Sym, Fk, Att, Gen1, Sk1, Gen2, Sk2, X1, Y1, X2, Y2>(f, g, i1, i2,
 						false);
 				xxx.validate(false);
 
 				return xxx;
-				
+
 			} catch (Exception ex) {
 
 				// ex.printStackTrace();
@@ -511,7 +512,7 @@ public class QueryExpReformulate extends QueryExp {
 
 		});
 
-		// System.out.println( Util.sep(qs, "\n") );
+//		 System.out.println( Util.sep(qs, "\n") );
 
 		return qs.get(idx);
 	}

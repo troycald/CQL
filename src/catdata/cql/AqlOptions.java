@@ -28,6 +28,8 @@ public final class AqlOptions {
     proverOptionNames.add(AqlOption.completion_sort);
     proverOptionNames.add(AqlOption.completion_compose);
     proverOptionNames.add(AqlOption.e_use_auto);
+    proverOptionNames.add(AqlOption.egglog_path);
+    proverOptionNames.add(AqlOption.egglog_bound);    
     proverOptionNames.add(AqlOption.completion_filter_subsumed);
     proverOptionNames.add(AqlOption.completion_syntactic_ac);
     proverOptionNames.add(AqlOption.completion_unfailing);
@@ -77,7 +79,8 @@ public final class AqlOptions {
     dont_validate_unsafe, static_typing, prover, start_ids_at, coproduct_allow_entity_collisions_unsafe,
     coproduct_allow_type_collisions_unsafe, import_col_seperator, csv_import_prefix, csv_prepend_entity, csv_row_sort_order,
     prepend_entity_on_ids, jdbc_export_truncate_after, import_missing_is_empty, jdbc_query_export_convert_type,
-    e_path, vampire_path, completion_unfailing, graal_language, triviality_check_best_effort, check_command_export_file, jdbc_zero, oracle_schema_mode, csv_utf8_bom;
+		e_path, vampire_path, completion_unfailing, graal_language, triviality_check_best_effort,
+		check_command_export_file, jdbc_zero, oracle_schema_mode, csv_utf8_bom, egglog_path, egglog_bound;
 
     private String getString(Map<String, String> map) {
       String n = map.get(toString());
@@ -170,6 +173,8 @@ public final class AqlOptions {
   // @SuppressWarnings("static-method")
   private static Object getDefault(AqlOption option) {
     return switch (option) {
+    case egglog_path -> "/usr/local/bin/egglog";
+    case egglog_bound -> "8";
     case csv_row_sort_order -> "";
     case csv_utf8_bom -> false;
     case oracle_schema_mode -> false;
@@ -265,9 +270,7 @@ public final class AqlOptions {
 
     case eval_approx_sql_unsafe -> false;
     case eval_use_sql_above -> 16 * 1024;
-    /* START CLOSED SOURCE */
     case maedmax_path -> "/usr/local/bin/maedmax";
-    /* END CLOSED SOURCE */
     case allow_empty_sorts_unsafe -> false;
     case chase_style -> "parallel";
     case emit_ids -> true;
@@ -308,6 +311,8 @@ public final class AqlOptions {
   private static Object getFromMap(Map<String, String> map, /* Collage<Ty, En, Sym, Fk, Att, Gen, Sk> col, */
       AqlOption op) {
     return switch (op) {
+    case egglog_path -> op.getString(map);
+    case egglog_bound -> op.getInteger(map);
     case csv_row_sort_order -> op.getString(map);
     case csv_utf8_bom -> op.getBoolean(map);
     case oracle_schema_mode -> op.getBoolean(map);
@@ -326,8 +331,6 @@ public final class AqlOptions {
     case allow_sql_import_all_unsafe -> op.getBoolean(map);
     case import_sql_direct_prefix -> op.getString(map);
     case check_warn_instead_of_fail -> op.getBoolean(map);
-    // case lax_literals:
-    // return op.getBoolean(map);
     case sql_constraints_simple -> op.getBoolean(map);
     case interpet_as_frozen -> op.getBoolean(map);
     case simplify_names -> op.getBoolean(map);

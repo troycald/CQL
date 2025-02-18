@@ -151,7 +151,8 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 				return viewCayley2(schema, i);
 
 			} catch (Exception e) {
-				return new JLabel(s + " is not an integer.");
+				e.printStackTrace();
+				return new JLabel(e.getMessage());
 			}
 		});
 

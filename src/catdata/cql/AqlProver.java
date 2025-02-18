@@ -14,6 +14,7 @@ import catdata.provers.CompletionProver;
 import catdata.provers.CongruenceProverUniform;
 import catdata.provers.DPKB;
 import catdata.provers.EProver;
+import catdata.provers.EgglogProver;
 import catdata.provers.FailProver;
 import catdata.provers.FreeProver;
 import catdata.provers.KBExp;
@@ -32,7 +33,7 @@ public class AqlProver<Ty, En, Sym, Fk, Att, Gen, Sk> implements DP<Ty, En, Sym,
 	private final KBtoDP<Ty, En, Sym, Fk, Att, Gen, Sk> dp;
 
 	public enum ProverName {
-		auto, monoidal, program, completion, congruence, fail, free, e, vampire
+		auto, monoidal, program, completion, congruence, fail, free, e, vampire, egglog
 
 	}
 
@@ -144,17 +145,12 @@ public class AqlProver<Ty, En, Sym, Fk, Att, Gen, Sk> implements DP<Ty, En, Sym,
 			exePath = (String) ops.getOrDefault(AqlOption.vampire_path);
 			dpkb = new VampireProver<>(exePath, col_simpl.toKB(), timeout);
 			break;
-		/* START CLOSED SOURCE */
-		// case maedmax:
-		// exePath = (String) ops.getOrDefault(AqlOption.maedmax_path);
-		// Boolean b = (Boolean) ops.getOrDefault(AqlOption.allow_empty_sorts_unsafe);
-		// dpkb = new MaedmaxProver<>(exePath, col_simpl.toKB(), b, timeout);
-		// break;
-		// case jaedmax:
-		// b = (Boolean) ops.getOrDefault(AqlOption.allow_empty_sorts_unsafe);
-		// dpkb = new JaedmaxProver<>(col_simpl.toKB(), b, timeout);
-		// break;
-		/* END CLOSED SOURCE */
+		case egglog:
+			Integer bound = (Integer) ops.getOrDefault(AqlOption.egglog_bound);
+			exePath = (String) ops.getOrDefault(AqlOption.egglog_path);
+			dpkb = new EgglogProver<>(exePath, col_simpl.toKB(), bound, timeout);
+			break;
+
 		default:
 			throw new RuntimeException("Anomaly: please report");
 		}
