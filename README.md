@@ -9,7 +9,7 @@ Build and installation
 
 ### Pre-built Binary
 
-https://www.categoricaldata.net/download.php
+[Github Releases](https://github.com/CategoricalData/CQL/releases)
 
 ### Eclipse
 
