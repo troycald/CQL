@@ -12,6 +12,7 @@ import catdata.Util;
 import catdata.cql.AqlOptions;
 import catdata.cql.Instance;
 import catdata.cql.Kind;
+import catdata.provers.EgglogProver;
 import catdata.cql.AqlOptions.AqlOption;
 
 public final class InstExpChase<Gen, Sk, X, Y> extends InstExp<Object, Object, Object, Object> {
@@ -118,6 +119,12 @@ public final class InstExpChase<Gen, Sk, X, Y> extends InstExp<Object, Object, O
 		AqlOptions ops = new AqlOptions(options, env.defaults);
 		ops = new AqlOptions(ops, AqlOption.fast_consistency_check, true);
 		ops = new AqlOptions(ops, AqlOption.dont_validate_unsafe, true);
+
+		boolean o = (Boolean) ops.getOrDefault(AqlOption.use_egglog_for_chase);
+		String path = (String) ops.getOrDefault(AqlOption.egglog_path);
+		if (o) {
+			return (Instance<String, String, Sym, Fk, Att, Object, Object, Object, Object>) (Object) EgglogProver.egglogChase(path, eds.eval(env, false), I.eval(env, isC), ops);
+		}
 
 		Instance<String, String, Sym, Fk, Att, ?, ?, ?, ?> ret = eds.eval(env, false)
 				.chase((Instance<String, String, Sym, Fk, Att, Gen, Sk, Integer, Y>) I.eval(env, false), ops).first;

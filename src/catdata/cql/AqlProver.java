@@ -148,7 +148,7 @@ public class AqlProver<Ty, En, Sym, Fk, Att, Gen, Sk> implements DP<Ty, En, Sym,
 		case egglog:
 			Integer bound = (Integer) ops.getOrDefault(AqlOption.egglog_bound);
 			exePath = (String) ops.getOrDefault(AqlOption.egglog_path);
-			dpkb = new EgglogProver<>(exePath, col_simpl.toKB(), bound, timeout);
+			dpkb = new EgglogProver<>(exePath, col_simpl.toKB(), bound);
 			break;
 
 		default:

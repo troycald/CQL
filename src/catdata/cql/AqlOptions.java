@@ -39,6 +39,10 @@ public final class AqlOptions {
     proverOptionNames.add(AqlOption.e_path);
     proverOptionNames.add(AqlOption.vampire_path);
     proverOptionNames.add(AqlOption.triviality_check_best_effort);
+    proverOptionNames.add(AqlOption.use_egglog_for_chase);
+    proverOptionNames.add(AqlOption.egglog_bound);
+    proverOptionNames.add(AqlOption.egglog_path);
+    
 
     return proverOptionNames;
   }
@@ -79,7 +83,7 @@ public final class AqlOptions {
     dont_validate_unsafe, static_typing, prover, start_ids_at, coproduct_allow_entity_collisions_unsafe,
     coproduct_allow_type_collisions_unsafe, import_col_seperator, csv_import_prefix, csv_prepend_entity, csv_row_sort_order,
     prepend_entity_on_ids, jdbc_export_truncate_after, import_missing_is_empty, jdbc_query_export_convert_type,
-		e_path, vampire_path, completion_unfailing, graal_language, triviality_check_best_effort,
+		e_path, vampire_path, completion_unfailing, graal_language, triviality_check_best_effort, use_egglog_for_chase,
 		check_command_export_file, jdbc_zero, oracle_schema_mode, csv_utf8_bom, egglog_path, egglog_bound;
 
     private String getString(Map<String, String> map) {
@@ -173,8 +177,9 @@ public final class AqlOptions {
   // @SuppressWarnings("static-method")
   private static Object getDefault(AqlOption option) {
     return switch (option) {
+    case use_egglog_for_chase -> false;
     case egglog_path -> "/usr/local/bin/egglog";
-    case egglog_bound -> "8";
+    case egglog_bound -> 8;
     case csv_row_sort_order -> "";
     case csv_utf8_bom -> false;
     case oracle_schema_mode -> false;
@@ -311,6 +316,7 @@ public final class AqlOptions {
   private static Object getFromMap(Map<String, String> map, /* Collage<Ty, En, Sym, Fk, Att, Gen, Sk> col, */
       AqlOption op) {
     return switch (op) {
+    case use_egglog_for_chase -> op.getBoolean(map);
     case egglog_path -> op.getString(map);
     case egglog_bound -> op.getInteger(map);
     case csv_row_sort_order -> op.getString(map);

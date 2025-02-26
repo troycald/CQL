@@ -83,6 +83,7 @@ import catdata.ide.CodeTextPanel;
 import catdata.ide.GuiUtil;
 import catdata.ide.ProgressPanel;
 import catdata.ide.Split;
+import catdata.provers.EgglogProver;
 import edu.uci.ics.jung.algorithms.layout.FRLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.DirectedSparseMultigraph;
@@ -1779,18 +1780,21 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 	}
 
 	@Override
-	public <N> Unit visit(String k, JTabbedPane arg, ColimitSchema<N> S) throws RuntimeException {
+	public <N> Unit visit(String k, JTabbedPane arg, ColimitSchema<N> S)  {
 		return visit(k, arg, S.schemaStr);
 	}
 
 	@SuppressWarnings("hiding")
 	@Override
-	public Unit visit(String k, JTabbedPane arg, Constraints S) throws RuntimeException {
+	public Unit visit(String k, JTabbedPane arg, Constraints S)  {
+		
+		arg.addTab("Egglog", new CodeTextPanel("", EgglogProver.toEgglog(S, null)));
+
 		return Unit.unit;
 	}
 
 	@Override
-	public Unit visit(String k, JTabbedPane pane, ApgTypeside t) throws RuntimeException {
+	public Unit visit(String k, JTabbedPane pane, ApgTypeside t)  {
 
 		Object[][] rowData = new Object[t.Bs.size()][3];
 		Object[] colNames = new Object[2];
@@ -1825,7 +1829,7 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 	}
 
 	@Override
-	public <L, e> Unit visit(String k, JTabbedPane pane, ApgInstance<L, e> G) throws RuntimeException {
+	public <L, e> Unit visit(String k, JTabbedPane pane, ApgInstance<L, e> G) {
 		apgInst0(pane, G);
 		apgInst1(pane, G);
 
