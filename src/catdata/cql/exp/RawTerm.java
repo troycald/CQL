@@ -1,14 +1,11 @@
 package catdata.cql.exp;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,18 +40,25 @@ public final class RawTerm {
 		}
 		return Util.maybeQuote(head) + "(" + Util.sep(args, ", ") + ")";
 	}
-	
+
+	public String toStringEgglog() {
+		var w = args.isEmpty() ? "" : " ";
+		return "(" + head + w + Util.sep(args.stream().map(z->z.toStringEgglog()).collect(Collectors.toList()), " ") + ")";
+	}
+
 	public String toStringX(String tick) {
-		
+
 		final String str = "";
 		if (args.isEmpty()) {
-			if (head.toLowerCase().equals("null")) return "NULL";
+			if (head.toLowerCase().equals("null"))
+				return "NULL";
 			return tick + (head) + tick + str;
 		}
 		if (args.size() == 1) {
 			return tick + args.get(0) + tick + "." + tick + head + tick;
 		}
-		return tick + head + tick + "(" + Util.sep(args.stream().map(j->j.toStringX(tick)).collect(Collectors.toList()), ", ") + ")";
+		return tick + head + tick + "("
+				+ Util.sep(args.stream().map(j -> j.toStringX(tick)).collect(Collectors.toList()), ", ") + ")";
 	}
 
 	public static Set<Triple<List<Pair<String, String>>, RawTerm, RawTerm>> eqs1(

@@ -7,7 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +17,9 @@ import java.util.stream.Collectors;
 
 import catdata.Chc;
 import catdata.Pair;
+import catdata.ParseException;
 import catdata.Util;
+import catdata.cql.AqlJs;
 import catdata.cql.AqlOptions;
 import catdata.cql.AqlProver.ProverName;
 import catdata.cql.Collage;
@@ -25,10 +27,17 @@ import catdata.cql.Collage.CCollage;
 import catdata.cql.Constraints;
 import catdata.cql.DP;
 import catdata.cql.ED;
+import catdata.cql.Eq;
 import catdata.cql.Instance;
 import catdata.cql.Term;
+import catdata.cql.exp.Att;
+import catdata.cql.exp.CombinatorParser;
+import catdata.cql.exp.Fk;
+import catdata.cql.exp.RawTerm;
+import catdata.cql.exp.Sym;
 import catdata.cql.fdm.InitialAlgebra;
 import catdata.cql.fdm.SaturatedInstance;
+import groovy.transform.ToString;
 
 public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 
@@ -88,35 +97,49 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			}
 			return ret;
 		};
+		var kb = I.collage().toKB();
 
+		int ruleNo = 1;
 		for (ED ed : eds.eds) {
-			String tail = "";
-			// String s1 = qr.apply(ed.As);
-			// String s2 = qr.apply(ed.Es);
-			// if (!s1.isEmpty()) {
-			// tail = s1 + " " + s2;
-			// }
-			// tail = tail == "" ? "" : " :when (" + tail + ")";
-
 			String lhs = "";
 			String rhs = "";
+			String pre = "R" + (ruleNo++);
+			
+			List<Chc<String,String>> l = new LinkedList<>();
+			List<Term<String, String, Sym, Fk, Att, Void, Void>> r = new LinkedList<>();
 
+			Map<String, Term<String, String, Sym, Fk, Att, Void, Void>> subst = new HashMap<>();
+			for (var y : ed.As.entrySet()) {
+				l.add(y.getValue());
+				r.add(Term.Var(y.getKey()));
+				lhs += "(univ" + pr.apply(y.getValue()) + " " + y.getKey() + " )" ;
+			}			
+			for (var x : ed.Es.entrySet()) {
+				var ss = new Pair<>(l, x.getValue());
+
+				var tt = new Pair<>(l.stream().map(pr).collect(Collectors.toList()), pr.apply(x.getValue()));
+				kb.syms.put(pre + x.getKey(), ss);
+				subst.put(x.getKey(), Term.Sym(Sym.Sym(pre + x.getKey(), tt), r));
+			}
+			
+			
 			for (var eq : ed.Awh) {
 				lhs += "(= " + eq.first.toEgglog() + " " + eq.second.toEgglog() + ")";
 			}
 			for (var eq : ed.Ewh) {
-				rhs += "(union " + eq.first.toEgglog() + " " + eq.second.toEgglog() + ")";
+				rhs += "(union " + eq.first.subst(subst).toEgglog() + " " + eq.second.subst(subst).toEgglog() + ")";
 			}
 
-			sb.append("\n(rule (" + lhs + ") " + "(" + rhs + ") " + tail + ")");
+			sb.append("\n(rule (" + lhs + ") " + "(" + rhs + "))");			//
 
 		}
 		if (I == null) {
 			return toEgglog(eds.schema.collage().toKB()) + sb.toString();
 		}
-
-		var x = toEgglog(I.collage().toKB()) + sb.toString();
-		System.out.println(x);
+//		System.out.println(kb);
+		kb.validate();
+		var x = toEgglog(kb) + sb.toString();
+		//System.out.println(x);
 		return x;
 	}
 
@@ -124,10 +147,9 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> I) {
 		var i = s.trim().indexOf(" ");
 		var j = s.trim().indexOf(")");
-		return s.trim().substring(i+2, s.trim().length()-2);
+		return s.trim().substring(i + 2, s.trim().length() - 2);
 	}
 
-	
 	public static <Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> SaturatedInstance<Ty, En, Sym, Fk, Att, String, String, Integer, Chc<String, Pair<Integer, Att>>> egglogChase(
 			String exePath, Constraints eds, Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> I, AqlOptions ops) {
 
@@ -147,100 +169,62 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			var err = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
 
 			writer.write(sb.toString() + "\n");
-
 			writer.write("(run-schedule (saturate (run)))" + "\n");
-
 			writer.flush();
 
 			while (true) {
 				String w = err.readLine();
-				System.out.println("***" + w);
+				System.out.println(w);
 				if (w.contains("Ruleset : search ")) {
-
 					break;
 				}
 			}
-			System.out.println("1------");
 			try {
-				Thread.currentThread().sleep(400);
+				Thread.currentThread().sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-			Function<String, Term<Ty, En, Sym, Fk, Att, Gen, Sk>> parseTerm = null;
-
-//			Map<En, Collection<Term<Ty, En, Sym, Fk, Att, Gen, Sk>>> ens1 = new HashMap<>();
-//			Map<En, Map<Term<Ty, En, Sym, Fk, Att, Gen, Sk>, Map<Fk, Term<Ty, En, Sym, Fk, Att, Gen, Sk>>>> fks1 = new HashMap<>();
-//			Map<En, Map<Term<Ty, En, Sym, Fk, Att, Gen, Sk>, Map<Att, Term<Ty, Void, Sym, Void, Void, Void, Term<Ty, En, Sym, Fk, Att, Gen, Sk>>>>> atts1 = new HashMap<>();
 
 			Collage<Ty, En, Sym, Fk, Att, String, String> col = new CCollage<>();
 			col.addAll(I.schema().typeSide.collage());
 			col.addAll(I.schema().collage());
-			col.addAll((Collage)I.collage());
-			
-			
-			Map<En, Integer> sizes = new HashMap<>();
+			col.addAll((Collage) I.collage());
+
 			for (var en : I.schema().ens) {
 				writer.write("(print-size " + "univ" + en + ")\n");
 				writer.flush();
 				String i = reader.readLine();
-
+				
 				int j = Integer.parseInt(i);
-				sizes.put(en, j);
-//				List<Term<Ty, En, Sym, Fk, Att, Gen, Sk>> l = new LinkedList<>();
-//				ens1.put(en, l);
-//				Map<Term<Ty, En, Sym, Fk, Att, Gen, Sk>, Map<Att, Term<Ty, Void, Sym, Void, Void, Void, Term<Ty, En, Sym, Fk, Att, Gen, Sk>>>> r = new HashMap<>();
-//				atts1.put(en, r);
-//				Map<Term<Ty, En, Sym, Fk, Att, Gen, Sk>, Map<Fk, Term<Ty, En, Sym, Fk, Att, Gen, Sk>>> r2 = new HashMap<>();
-//				fks1.put(en, r2);
 
 				writer.write("(print-function " + "univ" + en + " " + j + ")\n");
 				writer.flush();
 
-			//	reader.readLine(); // ?
 				reader.readLine(); // (
 				for (int w = 0; w < j; w++) {
 					String k = reader.readLine();
-					System.out.println("&" + k);
 					var h = readX(k, I);
 					col.gens().put(h, en);
-					System.out.println("Adding " + h);
-//					l.add(h);
-//					r.put(h, new HashMap<>());
-//					r2.put(h, new HashMap<>());
-
+//					System.out.println("Adding " + h);
 				}
 				reader.readLine(); // )
+				reader.readLine(); // 
+
 			}
-			/*
-			 * System.out.println("2------"); for (var fk : I.schema().fks.entrySet()) {
-			 * writer.write("(print-size " + fk.getKey() + ")\n"); writer.flush(); String i
-			 * = reader.readLine();
-			 * 
-			 * int j = Integer.parseInt(i); writer.write("(print-function " + fk.getKey() +
-			 * " " + j + ")\n"); writer.flush(); reader.readLine(); // ( for (int w = 0; w <
-			 * j; w++) { String k = reader.readLine(); System.out.println("&"+ k); }
-			 * reader.readLine(); // ) }
-			 */
-		/*	System.out.println("3------");
-
-			for (var fk : I.schema().atts.entrySet()) {
-				int j = sizes.get(I.schema().atts.get(fk.getKey()).first);
-				writer.write("(print-function " + fk.getKey() + " " + j + ")\n");
-				writer.flush();
-				reader.readLine(); // ?
-				reader.readLine(); // (
-
-				for (int w = 0; w < j; w++) {
-					String k = reader.readLine();
-					System.out.println("^" + k);
-					var m = readAtt(k, I);
-//					col.atts().put(fk.getKey(), null);
-				//	atts1.get(I.schema().atts.get(fk.getKey()).first).get(m.first).put(fk.getKey(), lift(m.second, I));
+			for (var g : col.gens().entrySet()) {
+				for (var att : I.schema().attsFrom(g.getValue())) {
+					System.out.println("extract " + "(" + att + "(" + g.getKey() + ")))");
+					writer.write("(extract " + "(" + att + "(" + g.getKey() + ")))\n");
+					writer.flush();
+					String z = reader.readLine(); // (
+					System.out.println(z);
+					System.out.println(toRawTerm(z, col.gens()));
+					System.out.println(col);
+					var j = RawTerm.infer1x(Collections.emptyMap(), toRawTerm(z, col.gens()), null, null, (Collage)col, "", (AqlJs<String, catdata.cql.exp.Sym>) I.schema().typeSide.js);
+					
+					col.eqs().add(new Eq(null, Term.Att(att, Term.Gen(g.getKey())), (Term) j.second));
 				}
-				reader.readLine(); // )
-			} */
+			}
 
 			
 			DP<Ty, En, Sym, Fk, Att, String, String> dp = new DP<>() {
@@ -257,58 +241,58 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 						throw new RuntimeException("Cannot solve full word problem");
 					}
 					try {
-
-//						System.out.println("writing ")
 						writer.write("(check (= " + lhs.toEgglog() + " " + rhs.toEgglog() + "))\n");
 						writer.flush();
 
-						// String s1 = reader.readLine();
-						// System.out.println(s1);
 						while (true) {
+//							System.out.println(w);
+
 							String w = err.readLine();
-							// System.out.println(w);
 							if (w.contains("Check failed")) {
 								return false;
 							} else if (w.contains("Checked fact")) {
 								return true;
 							}
 						}
-
 					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
 				}
-				
 			};
 
+			System.out.println("here " + col);
+			
 			var ret = new InitialAlgebra<Ty, En, Sym, Fk, Att, String, String>(ops, I.schema(), col, z -> z.toString(),
-					(z, zz) -> z.toString(), dp, ProverName.egglog);
+					(z, zz) -> zz.toString(), dp, ProverName.egglog);
 
-			
-			var w = new SaturatedInstance<>(ret, ret, false, false, true, new HashMap<>());
-			return w;
-	
-		//	return null;
-			/*
-			Function<En, Collection<Term<Ty, En, Sym, Fk, Att, Gen, Sk>>> ens = x -> ens1.get(x);
-			BiFunction<En, Term<Ty, En, Sym, Fk, Att, Gen, Sk>, Map<Fk, Term<Ty, En, Sym, Fk, Att, Gen, Sk>>> fks = (x,
-					y) -> new HashMap<>(); // (x,y) -> { throw new RuntimeException(); }
-			Map<Ty, Collection<Term<Ty, En, Sym, Fk, Att, Gen, Sk>>> tys = (Map<Ty, Collection<Term<Ty, En, Sym, Fk, Att, Gen, Sk>>>) (Object) Util
-					.newListsFor(I.schema().typeSide.tys);
-			Collection<Eq<Ty, Void, Sym, Void, Void, Void, Term<Ty, En, Sym, Fk, Att, Gen, Sk>>> eqs = new LinkedList<>();
+			return new SaturatedInstance<>(ret, ret, false, false, true, new HashMap<>());
 
-			BiFunction<En, Term<Ty, En, Sym, Fk, Att, Gen, Sk>, Map<Att, Term<Ty, Void, Sym, Void, Void, Void, Term<Ty, En, Sym, Fk, Att, Gen, Sk>>>> atts = null;
-			
-			var alg = new ImportAlgebra<Ty, En, Sym, Fk, Att, Term<Ty, En, Sym, Fk, Att, Gen, Sk>, Term<Ty, En, Sym, Fk, Att, Gen, Sk>>(
-					I.schema(), ens, tys, fks, atts, (x, y) -> "", (x, y) -> "", false, eqs);
-
-			var w = new SaturatedInstance<>(alg, alg, false, false, true, new HashMap<>());
-*/
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new RuntimeException("1Internal theorem prover anomaly: " + e.getLocalizedMessage());
 		}
 
+	}
+
+	private static <En> RawTerm toRawTerm(String z, Map<String, En> gens) {
+		try {
+			RawTerm t = new CombinatorParser().parseEgglogRawTerm(z);
+			return (toRawHelper(t, gens));			
+		} catch (ParseException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static <En> RawTerm toRawHelper(RawTerm t, Map<String, En> gens) {
+		for (String x : gens.keySet()) {
+			System.out.println("compare " + t.toStringEgglog() + " and " + "(" + x + ")");
+			if (t.toStringEgglog().equals("(" + x + ")")) {
+				return new RawTerm(x, new LinkedList<>());
+			} else {
+				System.out.println("no");
+			}
+		}
+		return new RawTerm(t.head, t.args.stream().map(z->toRawHelper(z,gens)).collect(Collectors.toList()));
 	}
 
 	public static <T, C, V> String toEgglog(KBTheory<T, C, V> th) {
