@@ -37,7 +37,6 @@ import catdata.cql.exp.RawTerm;
 import catdata.cql.exp.Sym;
 import catdata.cql.fdm.InitialAlgebra;
 import catdata.cql.fdm.SaturatedInstance;
-import groovy.transform.ToString;
 
 public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 
@@ -174,7 +173,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 
 			while (true) {
 				String w = err.readLine();
-				System.out.println(w);
+				//System.out.println(w);
 				if (w.contains("Ruleset : search ")) {
 					break;
 				}
@@ -188,7 +187,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			Collage<Ty, En, Sym, Fk, Att, String, String> col = new CCollage<>();
 			col.addAll(I.schema().typeSide.collage());
 			col.addAll(I.schema().collage());
-			col.addAll((Collage) I.collage());
+			//col.addAll((Collage) I.collage());
 
 			for (var en : I.schema().ens) {
 				writer.write("(print-size " + "univ" + en + ")\n");
@@ -213,13 +212,13 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			}
 			for (var g : col.gens().entrySet()) {
 				for (var att : I.schema().attsFrom(g.getValue())) {
-					System.out.println("extract " + "(" + att + "(" + g.getKey() + ")))");
+				//	System.out.println("extract " + "(" + att + "(" + g.getKey() + ")))");
 					writer.write("(extract " + "(" + att + "(" + g.getKey() + ")))\n");
 					writer.flush();
 					String z = reader.readLine(); // (
-					System.out.println(z);
-					System.out.println(toRawTerm(z, col.gens()));
-					System.out.println(col);
+			//		System.out.println(z);
+			//		System.out.println(toRawTerm(z, col.gens()));
+			//		System.out.println(col);
 					var j = RawTerm.infer1x(Collections.emptyMap(), toRawTerm(z, col.gens()), null, null, (Collage)col, "", (AqlJs<String, catdata.cql.exp.Sym>) I.schema().typeSide.js);
 					
 					col.eqs().add(new Eq(null, Term.Att(att, Term.Gen(g.getKey())), (Term) j.second));
@@ -260,7 +259,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 				}
 			};
 
-			System.out.println("here " + col);
+			//System.out.println("here " + col);
 			
 			var ret = new InitialAlgebra<Ty, En, Sym, Fk, Att, String, String>(ops, I.schema(), col, z -> z.toString(),
 					(z, zz) -> zz.toString(), dp, ProverName.egglog);
@@ -285,11 +284,11 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 
 	private static <En> RawTerm toRawHelper(RawTerm t, Map<String, En> gens) {
 		for (String x : gens.keySet()) {
-			System.out.println("compare " + t.toStringEgglog() + " and " + "(" + x + ")");
+		//	System.out.println("compare " + t.toStringEgglog() + " and " + "(" + x + ")");
 			if (t.toStringEgglog().equals("(" + x + ")")) {
 				return new RawTerm(x, new LinkedList<>());
 			} else {
-				System.out.println("no");
+		//		System.out.println("no");
 			}
 		}
 		return new RawTerm(t.head, t.args.stream().map(z->toRawHelper(z,gens)).collect(Collectors.toList()));

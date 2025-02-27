@@ -120,11 +120,8 @@ public final class InitialAlgebra<Ty, En, Sym, Fk, Att, Gen, Sk>
 			ens.put(en, new TIntHashSet(128, 1, -1));
 		}
 		
-		System.out.println(col);
 		while (saturate1(col))
 			;
-		System.out.println("sdf");
-		System.out.println(col);
 		
 		talg = new TalgSimplifier<>(this, col.eqsAsPairs().iterator(), col.sks(),
 				(Integer) ops.getOrDefault(AqlOption.talg_reduction));
