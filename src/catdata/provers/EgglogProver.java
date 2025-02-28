@@ -324,13 +324,20 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 		eqs.append("\n");
 		for (C c : th.syms.keySet()) {
 			var ty = th.syms.get(c);
+			String ww = "";
 			String cc = "";
 			for (int i = 1; i <= ty.first.size(); i++) {
 				cc += (" var" + i + " ");
+				ww += ("(univ" + pr.apply(ty.first.get(i-1)) + " " + "var" + i + ")");
 			}
 			String s = "(rule ((= var0 (" + c + " " + cc.trim() + "))) ((univ" + pr.apply(ty.second) + " var0)))";
 			outer2.get(ty.second).add(s);
-
+			String t = "(rule (" + ww + ")" + "((" + c + " " + cc.trim() + ")))" ;
+		//	System.out.println(t);
+			if (ty.first.size() > 0) {
+				outer2.get(ty.second).add(t);
+			}
+			//c(var0...varN)
 		}
 		sig.append("\n)");
 		for (T ty : th.tys) {
@@ -351,7 +358,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			if (eq.first != null && eq.first.size() > 0) {
 				eqs.append("\n(birewrite " + eq.second.toEgglog() + " " + eq.third.toEgglog() + tail + ")");
 			} else {
-				eqs.append("\n(union " + eq.second.toEgglog() + " " + eq.third.toEgglog() + ")");
+				eqs.append("\n(union " + eq.second.toEgglog() + " " + eq.third.toEgglog() + ")"); //to use biwrite needs to make sure ww gets add
 			}
 
 		}

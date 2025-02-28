@@ -1788,7 +1788,7 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 	@Override
 	public Unit visit(String k, JTabbedPane arg, Constraints S)  {
 		
-		arg.addTab("Egglog", new CodeTextPanel("", EgglogProver.toEgglog(S, null)));
+//		arg.addTab("Egglog", new CodeTextPanel("", EgglogProver.toEgglog(S, null)));
 
 		return Unit.unit;
 	}
