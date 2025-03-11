@@ -84,18 +84,19 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 		}
 	}
 
+	static Function<Chc<String, String>, String> pr = z -> z.toString().replace("inr ", "").replace("inl ", "");
+	static Function<Map<String, Chc<String, String>>, String> qr = z -> {
+		String ret = "";
+		for (var w : z.entrySet()) {
+			var d = " (univ" + pr.apply(w.getValue()) + " " + w.getKey() + ") ";
+			ret += d;
+		}
+		return ret;
+	};
+
 	public static String toEgglog(Constraints eds, Instance I) {
 		StringBuffer sb = new StringBuffer();
 
-		Function<Chc<String, String>, String> pr = z -> z.toString().replace("inr ", "").replace("inl ", "");
-		Function<Map<String, Chc<String, String>>, String> qr = z -> {
-			String ret = "";
-			for (var w : z.entrySet()) {
-				var d = " (univ" + pr.apply(w.getValue()) + " " + w.getKey() + ") ";
-				ret += d;
-			}
-			return ret;
-		};
 		var kb = I.collage().toKB();
 
 		int ruleNo = 1;
@@ -103,16 +104,16 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			String lhs = "";
 			String rhs = "";
 			String pre = "R" + (ruleNo++);
-			
-			List<Chc<String,String>> l = new LinkedList<>();
+
+			List<Chc<String, String>> l = new LinkedList<>();
 			List<Term<String, String, Sym, Fk, Att, Void, Void>> r = new LinkedList<>();
 
 			Map<String, Term<String, String, Sym, Fk, Att, Void, Void>> subst = new HashMap<>();
 			for (var y : ed.As.entrySet()) {
 				l.add(y.getValue());
 				r.add(Term.Var(y.getKey()));
-				lhs += "(univ" + pr.apply(y.getValue()) + " " + y.getKey() + " )" ;
-			}			
+				lhs += "(univ" + pr.apply(y.getValue()) + " " + y.getKey() + " )";
+			}
 			for (var x : ed.Es.entrySet()) {
 				var ss = new Pair<>(l, x.getValue());
 
@@ -120,8 +121,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 				kb.syms.put(pre + x.getKey(), ss);
 				subst.put(x.getKey(), Term.Sym(Sym.Sym(pre + x.getKey(), tt), r));
 			}
-			
-			
+
 			for (var eq : ed.Awh) {
 				lhs += "(= " + eq.first.toEgglog() + " " + eq.second.toEgglog() + ")";
 			}
@@ -129,7 +129,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 				rhs += "(union " + eq.first.subst(subst).toEgglog() + " " + eq.second.subst(subst).toEgglog() + ")";
 			}
 
-			sb.append("\n(rule (" + lhs + ") " + "(" + rhs + "))");			//
+			sb.append("\n(rule (" + lhs + ") " + "(" + rhs + "))"); //
 
 		}
 		if (I == null) {
@@ -138,7 +138,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 //		System.out.println(kb);
 		kb.validate();
 		var x = toEgglog(kb) + sb.toString();
-		//System.out.println(x);
+		// System.out.println(x);
 		return x;
 	}
 
@@ -173,7 +173,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 
 			while (true) {
 				String w = err.readLine();
-				//System.out.println(w);
+				// System.out.println(w);
 				if (w.contains("Ruleset : search ")) {
 					break;
 				}
@@ -187,13 +187,13 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			Collage<Ty, En, Sym, Fk, Att, String, String> col = new CCollage<>();
 			col.addAll(I.schema().typeSide.collage());
 			col.addAll(I.schema().collage());
-			//col.addAll((Collage) I.collage());
+			// col.addAll((Collage) I.collage());
 
 			for (var en : I.schema().ens) {
 				writer.write("(print-size " + "univ" + en + ")\n");
 				writer.flush();
 				String i = reader.readLine();
-				
+
 				int j = Integer.parseInt(i);
 
 				writer.write("(print-function " + "univ" + en + " " + j + ")\n");
@@ -207,25 +207,25 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 //					System.out.println("Adding " + h);
 				}
 				reader.readLine(); // )
-				reader.readLine(); // 
+				reader.readLine(); //
 
 			}
 			for (var g : col.gens().entrySet()) {
 				for (var att : I.schema().attsFrom(g.getValue())) {
-				//	System.out.println("extract " + "(" + att + "(" + g.getKey() + ")))");
+					// System.out.println("extract " + "(" + att + "(" + g.getKey() + ")))");
 					writer.write("(extract " + "(" + att + "(" + g.getKey() + ")))\n");
 					writer.flush();
 					String z = reader.readLine(); // (
-			//		System.out.println(z);
-			//		System.out.println(toRawTerm(z, col.gens()));
-			//		System.out.println(col);
-					var j = RawTerm.infer1x(Collections.emptyMap(), toRawTerm(z, col.gens()), null, null, (Collage)col, "", (AqlJs<String, catdata.cql.exp.Sym>) I.schema().typeSide.js);
-					
+					// System.out.println(z);
+					// System.out.println(toRawTerm(z, col.gens()));
+					// System.out.println(col);
+					var j = RawTerm.infer1x(Collections.emptyMap(), toRawTerm(z, col.gens()), null, null, (Collage) col,
+							"", (AqlJs<String, catdata.cql.exp.Sym>) I.schema().typeSide.js);
+
 					col.eqs().add(new Eq(null, Term.Att(att, Term.Gen(g.getKey())), (Term) j.second));
 				}
 			}
 
-			
 			DP<Ty, En, Sym, Fk, Att, String, String> dp = new DP<>() {
 
 				@Override
@@ -259,8 +259,8 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 				}
 			};
 
-			//System.out.println("here " + col);
-			
+			// System.out.println("here " + col);
+
 			var ret = new InitialAlgebra<Ty, En, Sym, Fk, Att, String, String>(ops, I.schema(), col, z -> z.toString(),
 					(z, zz) -> zz.toString(), dp, ProverName.egglog);
 
@@ -276,7 +276,7 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 	private static <En> RawTerm toRawTerm(String z, Map<String, En> gens) {
 		try {
 			RawTerm t = new CombinatorParser().parseEgglogRawTerm(z);
-			return (toRawHelper(t, gens));			
+			return (toRawHelper(t, gens));
 		} catch (ParseException e) {
 			throw new RuntimeException(e);
 		}
@@ -284,14 +284,15 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 
 	private static <En> RawTerm toRawHelper(RawTerm t, Map<String, En> gens) {
 		for (String x : gens.keySet()) {
-		//	System.out.println("compare " + t.toStringEgglog() + " and " + "(" + x + ")");
+			// System.out.println("compare " + t.toStringEgglog() + " and " + "(" + x +
+			// ")");
 			if (t.toStringEgglog().equals("(" + x + ")")) {
 				return new RawTerm(x, new LinkedList<>());
 			} else {
-		//		System.out.println("no");
+				// System.out.println("no");
 			}
 		}
-		return new RawTerm(t.head, t.args.stream().map(z->toRawHelper(z,gens)).collect(Collectors.toList()));
+		return new RawTerm(t.head, t.args.stream().map(z -> toRawHelper(z, gens)).collect(Collectors.toList()));
 	}
 
 	public static <T, C, V> String toEgglog(KBTheory<T, C, V> th) {
@@ -328,16 +329,16 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			String cc = "";
 			for (int i = 1; i <= ty.first.size(); i++) {
 				cc += (" var" + i + " ");
-				ww += ("(univ" + pr.apply(ty.first.get(i-1)) + " " + "var" + i + ")");
+				ww += ("(univ" + pr.apply(ty.first.get(i - 1)) + " " + "var" + i + ")");
 			}
 			String s = "(rule ((= var0 (" + c + " " + cc.trim() + "))) ((univ" + pr.apply(ty.second) + " var0)))";
 			outer2.get(ty.second).add(s);
-			String t = "(rule (" + ww + ")" + "((" + c + " " + cc.trim() + ")))" ;
-		//	System.out.println(t);
+			String t = "(rule (" + ww + ")" + "((" + c + " " + cc.trim() + ")))";
+			// System.out.println(t);
 			if (ty.first.size() > 0) {
 				outer2.get(ty.second).add(t);
 			}
-			//c(var0...varN)
+			// c(var0...varN)
 		}
 		sig.append("\n)");
 		for (T ty : th.tys) {
@@ -358,7 +359,9 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			if (eq.first != null && eq.first.size() > 0) {
 				eqs.append("\n(birewrite " + eq.second.toEgglog() + " " + eq.third.toEgglog() + tail + ")");
 			} else {
-				eqs.append("\n(union " + eq.second.toEgglog() + " " + eq.third.toEgglog() + ")"); //to use biwrite needs to make sure ww gets add
+				eqs.append("\n(union " + eq.second.toEgglog() + " " + eq.third.toEgglog() + ")"); // to use biwrite
+																									// needs to make
+																									// sure ww gets add
 			}
 
 		}
@@ -368,10 +371,35 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 
 	@Override
 	public synchronized boolean eq(Map<V, T> ctx, KBExp<C, V> lhs, KBExp<C, V> rhs) {
-		if (ctx != null && !ctx.isEmpty()) {
-			throw new RuntimeException("Cannot solve full word problem");
-		}
 		try {
+
+			if (ctx != null && !ctx.isEmpty()) {
+				writer.write("(push)" + "\n");
+				writer.flush();
+				String w = err.readLine();
+//				System.out.println(w);
+				for (var e : ctx.entrySet()) {
+					writer.write("(constructor " + e.getKey() + " () " + pr.apply((Chc) e.getValue()) + ")\n");
+//					System.out.println("sdf " + "(constructor " + e.getKey() + " () " + pr.apply((Chc) e.getValue()) + ")\n");
+					writer.flush();
+					w = err.readLine();
+//					System.out.println(w);
+//					System.out.println("asd (univ" +  pr.apply((Chc) e.getValue()) + "( " + e.getKey() + "))\n");
+					
+					writer.write("(univ" + pr.apply((Chc) e.getValue()) + "( " + e.getKey() + "))\n");
+					writer.flush();
+					w = err.readLine();
+//					System.out.println(w);
+					String s = "(rule ((= var0 (" + e.getKey() + " " + "))) ((univ" + (pr.apply((Chc) e.getValue())) + " var0)))\n";
+					writer.write(s);
+					writer.flush();
+					w = err.readLine();
+//					System.out.println("sdf " + s);
+//					System.out.println(w);
+					// (rule ((= var0 (one ))) ((univnat var0)))
+				}
+			}
+
 			writer.write("(run " + runLevel + " :until (= " + lhs.toEgglog() + " " + rhs.toEgglog() + "))" + "\n");
 			writer.flush();
 
@@ -383,10 +411,22 @@ public class EgglogProver<T, C, V> extends DPKB<T, C, V> {
 			// System.out.println(s1);
 			while (true) {
 				String w = err.readLine();
-				// System.out.println(w);
+			//	System.out.println(w);
 				if (w.contains("Check failed")) {
+
+					if (ctx != null && !ctx.isEmpty()) {
+						writer.write("(pop)" + "\n");
+						writer.flush();
+					}
+
 					return false;
 				} else if (w.contains("Checked fact")) {
+
+					if (ctx != null && !ctx.isEmpty()) {
+						writer.write("(pop)" + "\n");
+						writer.flush();
+					}
+
 					return true;
 				}
 			}
