@@ -128,7 +128,7 @@ public class PragmaExpCheck2 extends PragmaExp {
 			// ed.validate(Q0.src);
 		}
 		Constraints C1 = new Constraints(Q0.src, set, options);
-		// int[] i = new int[] { 0 };
+		
 		Long timeout = (long) options.getOrDefault(AqlOption.timeout);
 		String exePath = (String) options.getOrDefault(AqlOption.e_path);
 		boolean auto = (boolean) options.getOrDefault(AqlOption.e_use_auto);

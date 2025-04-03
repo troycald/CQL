@@ -11,13 +11,13 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 
 import org.apache.commons.cli.CommandLine;
@@ -37,10 +37,7 @@ import catdata.cql.exp.AqlParserFactory;
 import catdata.ide.IdeOptions.IdeOption;
 
 /**
- * 
- * @author ryan
- * 
- *         Program entry point.
+ * GUI entry point.
  */
 public class IDE {
 
@@ -141,7 +138,7 @@ public class IDE {
 			}
 		});
 
-	/*	new Thread(() -> {
+		new Thread(() -> {
 			File jf = new File("cql.jar");
 			if (jf.exists()) {
 				long current = jf.lastModified();
@@ -152,9 +149,13 @@ public class IDE {
 					URLConnection c = u.openConnection();
 					c.connect();
 					String l = Util.readFile(new InputStreamReader(c.getInputStream()));
-					long newest = Long.parseLong(l.toString().trim() + "000");
-					// System.out.println("Newest cql.jar version: " + new
-					// Date(newest).toLocaleString());
+					long newest = Long.parseLong(l.trim() + "000");
+//					System.out.println("From server: " + l.trim());		
+//					System.out.println("b " +  new Date(newest).toLocaleString());
+//					System.out.println("a " +  new Date(l.trim()).toLocaleString());		
+
+//					System.out.println("Newest cql.jar version: " + new Date(newest).toLocaleString());
+//					System.out.println("Current cql.jar version: " + new Date(current).toLocaleString());
 					if (newest > current) {
 						int x = JOptionPane.showConfirmDialog(null,
 								"New Version Available (based on local cql.jar timestamp) - Download and Exit?",
@@ -169,7 +170,7 @@ public class IDE {
 				}
 			}
 
-		}).start(); */
+		}).start();
 	}
 
 	{
@@ -181,11 +182,11 @@ public class IDE {
 	}
 
 	static {
+		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 

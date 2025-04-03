@@ -19,6 +19,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+
 import com.google.common.base.Function;
 
 import catdata.Pair;
@@ -90,7 +91,7 @@ public class CategoryOfElements<Node, Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> {
     vv.getRenderContext().setVertexLabelRenderer(new MyVertexT(cards));
     vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
     vv.getRenderContext().setEdgeLabelTransformer(t -> t.first.toString());
-
+ 
     JPanel ret = new JPanel(new GridLayout(1, 1));
     JSplitPane pane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 

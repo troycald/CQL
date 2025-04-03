@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 
 import catdata.Util;
 import catdata.ide.Olog.OlogLiteral;
@@ -39,13 +39,13 @@ class OlogStoreImpl implements OlogStore {
 	public void save() {
 		if (file == null)
 			throw new RuntimeException("File not set");
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			mapper.writeValue(Paths.get(file).toFile(), this);
-			dirty = false;
-		} catch (Exception e1) {
-			throw new RuntimeException(e1); 
-		}
+	//	ObjectMapper mapper = new ObjectMapper();
+	//	try {
+	//		mapper.writeValue(Paths.get(file).toFile(), this);
+	//		dirty = false;
+	//	} catch (Exception e1) {
+	//		throw new RuntimeException(e1); 
+	//	}
 		
 	}
 

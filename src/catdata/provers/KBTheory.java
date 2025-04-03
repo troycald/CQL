@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.github.jsonldjava.shaded.com.google.common.collect.Iterables;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
 import catdata.Pair;

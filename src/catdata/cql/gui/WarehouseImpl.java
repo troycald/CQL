@@ -1,7 +1,5 @@
 package catdata.cql.gui;
 
-
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -44,8 +42,9 @@ public class WarehouseImpl extends Warehouse<String, String> {
 
 	private static AqlOptions stringToOptions(String s) {
 		var x = CombinatorParser.parseOptions(s);
-		return new AqlOptions(Util.toMapSafely(x),AqlOptions.initialOptions);
+		return new AqlOptions(Util.toMapSafely(x), AqlOptions.initialOptions);
 	}
+
 	public WarehouseImpl(String prover, String options, boolean p) {
 		super(new AqlOptions(stringToOptions(options), AqlOption.e_path, prover));
 		push = p;
@@ -59,6 +58,8 @@ public class WarehouseImpl extends Warehouse<String, String> {
 		var eds = vv.second;
 		var insts = vv.third;
 
+		if (schs == null)
+			Util.anomaly();
 		univ = new ColimitSchema<String>(typeside, schs, links.enLinks, links.colLinks.values(), options);
 
 		var l = new LinkedList<ED>();
@@ -67,9 +68,10 @@ public class WarehouseImpl extends Warehouse<String, String> {
 		}
 
 		edsFwd = new HashMap<>();
-		 
-		 for (var v : getSources().keySet()) {
-		//	System.out.println("trying " + v + " in " + getSources().keySet() + " and " + univ.mappingsStr.keySet());
+
+		for (var v : getSources().keySet()) {
+			// System.out.println("trying " + v + " in " + getSources().keySet() + " and " +
+			// univ.mappingsStr.keySet());
 			if (!eds.containsKey(v) || !univ.mappingsStr.containsKey(v)) {
 				continue;
 			}
@@ -78,8 +80,9 @@ public class WarehouseImpl extends Warehouse<String, String> {
 			}
 			var xxx = eds.get(v).sigma(univ.mappingsStr.get(v), options);
 			edsFwd.put(v, xxx);
-			if (push) l.addAll(xxx.eds);
-		 
+			if (push)
+				l.addAll(xxx.eds);
+
 		}
 		rowLinks = new Constraints(univ.schemaStr, l, options);
 
@@ -99,6 +102,7 @@ public class WarehouseImpl extends Warehouse<String, String> {
 		return "WarehouseImpl [edsFwd=" + edsFwd + ", univ=" + univ + ", chase_return=" + chase_return + ", fwds="
 				+ fwds + ", rowLinks=" + rowLinks + ", push=" + push + "]";
 	}
+
 	@Override
 	public ColimitSchema getColimit() {
 		return univ;
@@ -129,7 +133,6 @@ public class WarehouseImpl extends Warehouse<String, String> {
 
 		return new SigmaDeltaUnitTransform<>(univ.mappingsStr.get(n), this.getSources().get(n).third, options);
 	}
-
 
 	@Override
 	public Instance pointToPoint(String s, String t) {
@@ -198,19 +201,20 @@ public class WarehouseImpl extends Warehouse<String, String> {
 	}
 
 	@Override
-	public Chc<Boolean,String> isTargetConstraintsOk(String q) {
+	public Chc<Boolean, String> isTargetConstraintsOk(String q) {
 		if (univ == null) {
 			Util.anomaly();
 		}
 
 		try {
-			PragmaExpCheck2.extracted(getTargets().get(q).second, getUniversalConstraints(), getTargets().get(q).third, options);
+			PragmaExpCheck2.extracted(getTargets().get(q).second, getUniversalConstraints(), getTargets().get(q).third,
+					options);
 		} catch (Exception e) {
 			return Chc.inRight(e.getMessage());
 		}
 		return Chc.inLeft(true);
 	}
-	
+
 	@Override
 	public Transform getRoundTripCoUnit(String q) {
 		if (univ == null) {
@@ -220,11 +224,10 @@ public class WarehouseImpl extends Warehouse<String, String> {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 	@Override
 	public boolean ready() {
 		return univ != null && chase_return != null;
 	}
-
-	
 
 }

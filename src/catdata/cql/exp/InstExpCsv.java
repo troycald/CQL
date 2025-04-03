@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,9 +34,9 @@ import catdata.LocStr;
 import catdata.Pair;
 import catdata.Util;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Schema;
 import catdata.cql.Term;
-import catdata.cql.AqlOptions.AqlOption;
 import gnu.trove.map.hash.THashMap;
 
 //TODO aql reflection uses == instead of equals

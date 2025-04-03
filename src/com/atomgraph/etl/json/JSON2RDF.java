@@ -38,7 +38,7 @@ import picocli.CommandLine;
  */
 @CommandLine.Command(name = "json2rdf")
 public class JSON2RDF
-{
+{ 
     
     private final InputStream jsonIn;
     private final OutputStream rdfOut;

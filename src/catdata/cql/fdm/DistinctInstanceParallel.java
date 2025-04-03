@@ -11,9 +11,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.BiConsumer;
 
-import org.apache.commons.collections15.ListUtils;
+import org.apache.commons.collections4.ListUtils;
 
-import com.github.jsonldjava.shaded.com.google.common.collect.Iterables;
+import com.google.common.collect.Iterables;
 
 import catdata.Chc;
 import catdata.Pair;

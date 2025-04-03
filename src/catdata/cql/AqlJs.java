@@ -12,9 +12,7 @@ import gnu.trove.map.hash.THashMap;
 
 public class AqlJs<Ty, Sym> {
 
-	private static final String postfix = ""; // \n\nPossibly helpful info: 32-bit Java integers cannot exceed 2
-												// billion; if you need larger numbers please use strings \n\nPossibly
-												// useful link: http://docs.oracle.com/javase/8/docs/api/ .";
+	private static final String postfix = "";
 
 	private final Map<Ty, String> iso1;
 	private final Map<Sym, String> iso2;
@@ -36,7 +34,6 @@ public class AqlJs<Ty, Sym> {
 		this.java_parsers = java_parsers;
 		this.java_tys = java_tys;
 		Object last = "";
-
 		if (java_tys.isEmpty()) {
 			iso1 = null;
 			iso2 = null;
@@ -48,6 +45,8 @@ public class AqlJs<Ty, Sym> {
 		iso1 = new THashMap<>(java_parsers.size());
 		iso2 = new THashMap<>(java_fns.size());
 
+		//com.oracle.truffle.js.scriptengine.GraalJSEngineFactory;
+		
 		//System.out.println(org.graalvm.polyglot.Engine.create().getLanguages().keySet());
 
 		

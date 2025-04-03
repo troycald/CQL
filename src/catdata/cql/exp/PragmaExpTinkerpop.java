@@ -1,7 +1,5 @@
 package catdata.cql.exp;
 
-import static org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,9 +21,9 @@ import catdata.Pair;
 import catdata.Unit;
 import catdata.Util;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Kind;
 import catdata.cql.Pragma;
-import catdata.cql.AqlOptions.AqlOption;
 
 public final class PragmaExpTinkerpop extends PragmaExp {
 	private final List<String> jss;
@@ -117,28 +115,28 @@ public final class PragmaExpTinkerpop extends PragmaExp {
 			}
 
 		};
-	}
+	} 
 
 	public static List<Object> execGremlin(AqlOptions ops, List<String> jss) throws Exception {
 		String host = (String) ops.getOrDefault(AqlOption.tinkerpop_host);
 		Integer port = (Integer) ops.getOrDefault(AqlOption.tinkerpop_port);
 		long timeout = 1000 * (Long) ops.getOrDefault(AqlOption.timeout);
 		String gname = (String) ops.getOrDefault(AqlOption.tinkerpop_graph_name);
-
+//ChannelHandler o; 
 		String file0 = "hosts: [" + host + "]\n" + "port: " + port + "\n"
-				+ "serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GryoMessageSerializerV3d0, config: { ioRegistries: [com.lambdazen.bitsy.BitsyIoRegistryV3d0] }}";
+				+ "serializer: { className: org.apache.tinkerpop.gremlin.driver.ser.GraphBinaryMessageSerializerV1, config: { ioRegistries: [org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerIoRegistryV1d0] }}";
 		File f0 = File.createTempFile("tempfile0", ".yaml");
 		Util.writeFile(file0, f0.getAbsolutePath());
-
+//		org.apache.tinkerpop.gremlin.util.Serializer
 		String file1 = "gremlin.remote.remoteConnectionClass=org.apache.tinkerpop.gremlin.driver.remote.DriverRemoteConnection\ngremlin.remote.driver.clusterFile="
 				+ f0.getAbsolutePath() + "\ngremlin.remote.driver.sourceName=" + gname;
 		File f1 = File.createTempFile("tempfile1", ".properties");
 		Util.writeFile(file1, f1.getAbsolutePath());
 
 		ConcurrentBindings b = new ConcurrentBindings();
-		var zzz = traversal().withRemote(f1.getAbsolutePath());
+		var zzz = org.apache.tinkerpop.gremlin.process.traversal.AnonymousTraversalSource.traversal().withRemote(f1.getAbsolutePath());
 		b.putIfAbsent(gname, zzz);
-
+		
 		GremlinExecutor conn = GremlinExecutor.build().evaluationTimeout(timeout).globalBindings(b).create();
 		List<Object> ret = new ArrayList<>(jss.size());
 		for (String s : jss) {
@@ -146,14 +144,14 @@ public final class PragmaExpTinkerpop extends PragmaExp {
 			Object actualResult = evalResult.get();
 			ret.add(actualResult);
 		}
-		conn.close();
+		conn.close(); 
 		return ret;
 	}
 
 	public static String maybeQuote(String s) {
 		return StringEscapeUtils.escapeEcmaScript(s);
 	}
-
+ 
 	public static String format(List<Object> str0, List<String> jss) throws Exception {
 		String str = "";
 		for (int i = 0; i < str0.size(); i++) {

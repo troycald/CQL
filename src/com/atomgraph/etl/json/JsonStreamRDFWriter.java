@@ -22,15 +22,15 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.stream.JsonParser;
-
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.riot.system.IRIResolver;
+import org.apache.jena.irix.IRIxResolver;
 import org.apache.jena.riot.system.StreamRDF;
+
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
 
 /**
  * Converts JSON stream to RDF stream.
@@ -42,7 +42,7 @@ public class JsonStreamRDFWriter
 
     private final JsonParser parser ;
     private final StreamRDF rdfStream ;
-    private final IRIResolver iriResolver ;
+    private final IRIxResolver iriResolver ;
 
     public JsonStreamRDFWriter(Reader reader, StreamRDF rdfStream, String baseURI)
     {
@@ -58,7 +58,7 @@ public class JsonStreamRDFWriter
     {
         this.parser = parser;
         this.rdfStream = rdfStream;
-        this.iriResolver = IRIResolver.create(baseURI);
+        this.iriResolver = IRIxResolver.create(baseURI).build();
     } 
     
     public void convert()
@@ -70,7 +70,7 @@ public class JsonStreamRDFWriter
         getStreamRDF().finish();
     }
     
-    public static void write(JsonParser parser, StreamRDF rdfStream, IRIResolver iriResolver)
+    public static void write(JsonParser parser, StreamRDF rdfStream, IRIxResolver iriResolver)
     {
         Deque<Node> subjectStack = new ArrayDeque<>();
         Map<Node, Node> arrayProperties = new HashMap<>();
@@ -91,7 +91,7 @@ public class JsonStreamRDFWriter
                 case START_OBJECT:
                     Node subject = NodeFactory.createBlankNode();
                     // add triple with current array property, if any
-                    if (property != null && !subjectStack.isEmpty()) rdfStream.triple(new Triple(subjectStack.getLast(), property, subject));
+                    if (property != null && !subjectStack.isEmpty()) rdfStream.triple(Triple.create(subjectStack.getLast(), property, subject));
                     subjectStack.addLast(subject);
                 break;
                 case END_OBJECT:
@@ -100,25 +100,25 @@ public class JsonStreamRDFWriter
                     if (!subjectStack.isEmpty() && arrayProperties.containsKey(subjectStack.getLast())) property = arrayProperties.get(subjectStack.getLast());
                 break;
                 case VALUE_FALSE:
-                    rdfStream.triple(new Triple(subjectStack.getLast(), property, NodeFactory.createLiteralByValue(Boolean.FALSE, XSDDatatype.XSDboolean)));
+                	rdfStream.triple(Triple.create(subjectStack.getLast(), property, NodeFactory.createLiteralByValue(Boolean.FALSE, XSDDatatype.XSDboolean)));
                 break;
                 case VALUE_TRUE:
-                    rdfStream.triple(new Triple(subjectStack.getLast(), property, NodeFactory.createLiteralByValue(Boolean.TRUE, XSDDatatype.XSDboolean)));
+                    rdfStream.triple(Triple.create(subjectStack.getLast(), property, NodeFactory.createLiteralByValue(Boolean.TRUE, XSDDatatype.XSDboolean)));
                 break;
                 case KEY_NAME:
-                    property = NodeFactory.createURI(iriResolver.resolveToString("#" + parser.getString()));
+                    property = NodeFactory.createURI(iriResolver.resolve("#" + parser.getString()).str());
                 break;
                 case VALUE_STRING:
-                    if (property != null) rdfStream.triple(new Triple(subjectStack.getLast(), property, NodeFactory.createLiteral(parser.getString())));
+                    if (property != null) rdfStream.triple(Triple.create(subjectStack.getLast(), property, NodeFactory.createLiteral(parser.getString())));
                 break;
                 case VALUE_NUMBER:
                     try
                     {
-                        rdfStream.triple(new Triple(subjectStack.getLast(), property,NodeFactory.createLiteralByValue(Integer.valueOf(parser.getString()), XSDDatatype.XSDint)));
+                        rdfStream.triple(Triple.create(subjectStack.getLast(), property,NodeFactory.createLiteralByValue(Integer.valueOf(parser.getString()), XSDDatatype.XSDint)));
                     }
                     catch (NumberFormatException ex)
                     {
-                        rdfStream.triple(new Triple(subjectStack.getLast(), property,NodeFactory.createLiteralByValue(Float.valueOf(parser.getString()), XSDDatatype.XSDfloat)));
+                        rdfStream.triple(Triple.create(subjectStack.getLast(), property,NodeFactory.createLiteralByValue(Float.valueOf(parser.getString()), XSDDatatype.XSDfloat)));
                     }
                 break;
                 case VALUE_NULL:
@@ -137,7 +137,7 @@ public class JsonStreamRDFWriter
         return rdfStream;
     }
 
-    protected IRIResolver getIRIResolver()
+    protected IRIxResolver getIRIResolver()
     {
         return iriResolver;
     }

@@ -36,8 +36,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.iterators.IteratorIterable;
 import org.apache.commons.collections4.list.TreeList;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;

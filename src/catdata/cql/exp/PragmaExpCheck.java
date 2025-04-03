@@ -8,9 +8,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
 import javax.swing.JOptionPane;
 
 import catdata.Chc;
@@ -18,15 +15,18 @@ import catdata.Pair;
 import catdata.Unit;
 import catdata.Util;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Constraints;
 import catdata.cql.ED;
 import catdata.cql.Instance;
 import catdata.cql.Kind;
 import catdata.cql.Pragma;
 import catdata.cql.Term;
-import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.fdm.Row;
 import gnu.trove.map.hash.THashMap;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 
 @SuppressWarnings("hiding")
 public final class PragmaExpCheck<X, Y> extends PragmaExp {
@@ -166,7 +166,7 @@ public final class PragmaExpCheck<X, Y> extends PragmaExp {
 						JsonObjectBuilder zzz = Json.createObjectBuilder();
 						for (Entry<String, Chc<X, Term<String, String, Sym, Fk, Att, String, String>>> entry : x.asMap()
 								.entrySet()) {
-							var x2 = entry.getValue();
+							var x2 = entry.getValue(); 
 							if (x2.left) {
 								Chc<String, String> z = q.eds.get(ed).As.get(entry.getKey());
 								if (z.left) {

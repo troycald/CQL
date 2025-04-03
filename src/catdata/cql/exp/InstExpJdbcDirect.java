@@ -9,15 +9,15 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-import com.github.jsonldjava.shaded.com.google.common.collect.Iterators;
+import com.google.common.collect.Iterators;
 
 import catdata.LocStr;
 import catdata.Pair;
 import catdata.Util;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Instance;
 import catdata.cql.Kind;
-import catdata.cql.AqlOptions.AqlOption;
 
 public class InstExpJdbcDirect extends InstExp<String, String, String, String> {
 
