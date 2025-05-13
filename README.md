@@ -1,6 +1,9 @@
 Categorical Query Language
 ====
 
+The Categorical Query Language IDE provides a reference implementation of 
+David Spivak's functorial data migration and associated constructions.
+Its designed is detailed <a href="https://arxiv.org/abs/1503.03571">here</a>.
 For more information, please see:
 - <a href="http://categoricaldata.net" target="_blank">Community page</a>
 
@@ -26,6 +29,8 @@ Related projects:
 --------------
 
 - [Archived FQL code](https://github.com/CategoricalData/FQL)
+- [CatCoLab](https://github.com/ToposInstitute/CatColab)
+- [AlgebraicJulia](https://www.algebraicjulia.org)
 
 License
 -------
