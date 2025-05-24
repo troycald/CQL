@@ -31,6 +31,7 @@ Related projects:
 - [Archived FQL code](https://github.com/CategoricalData/FQL)
 - [CatCoLab](https://github.com/ToposInstitute/CatColab)
 - [AlgebraicJulia](https://www.algebraicjulia.org)
+- [CQL in Haskell](https://github.com/statebox/cql)
 
 License
 -------
