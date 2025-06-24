@@ -142,20 +142,18 @@ public class IDE {
 			File jf = new File("cql.jar");
 			if (jf.exists()) {
 				long current = jf.lastModified();
-				// System.out.println("cql.jar file modification date: " + new
-				// Date(current).toLocaleString());
+	//			 System.out.println("cql.jar file modification date: " + new
+	//			 Date(current).toLocaleString());
 				try {
 					URL u = new URL("https://www.categoricaldata.net/version.php");
 					URLConnection c = u.openConnection();
 					c.connect();
 					String l = Util.readFile(new InputStreamReader(c.getInputStream()));
-					long newest = Long.parseLong(l.trim() + "000");
-//					System.out.println("From server: " + l.trim());		
-//					System.out.println("b " +  new Date(newest).toLocaleString());
-//					System.out.println("a " +  new Date(l.trim()).toLocaleString());		
-
-//					System.out.println("Newest cql.jar version: " + new Date(newest).toLocaleString());
-//					System.out.println("Current cql.jar version: " + new Date(current).toLocaleString());
+					long newest = Long.parseLong(l.trim() );
+			//		System.out.println("From server: " + l.trim());		
+			
+			//		System.out.println("Newest cql.jar version: " + new Date(newest).toLocaleString());
+			//		System.out.println("Current cql.jar version: " + new Date(current).toLocaleString());
 					if (newest > current) {
 						int x = JOptionPane.showConfirmDialog(null,
 								"New Version Available (based on local cql.jar timestamp) - Download and Exit?",
