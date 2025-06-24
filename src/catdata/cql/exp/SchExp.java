@@ -117,6 +117,8 @@ public abstract class SchExp extends Exp<Schema<String, String, Sym, Fk, Att>> {
 	public abstract R visit(P param, SchExpPseudo exp) throws E;
 
 	public abstract R visit(P param, SchExpUnit schExpUnit) throws E;
+
+	public abstract R visit(P param, SchExpDiff schExpDiff) throws E;
     
   }
 

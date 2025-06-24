@@ -1368,7 +1368,7 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 			Runnable runnable = () -> {
 				try {
 					Set<Term<String, Void, Sym, Void, Void, Void, Void>> z = T.hom(l0, r);
-					//System.out.println(z);
+					// System.out.println(z);
 					// Collection<Pair<OplCtx<S, V>, OplTerm<C, V>>> z =
 					// kb.hom0(Thread.currentThread(), l0, r);
 					// List<String> u = z.stream().map(o -> OplTerm.strip(o.first + " |- " +
@@ -1389,7 +1389,7 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 				t.start();
 				t.join(10000); // TODO aql
 
-			//	t.stop();
+				// t.stop();
 				if (bot.getText().equals("")) {
 					bot.setText("Timeout (10s)");
 				}
@@ -1436,68 +1436,68 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 			ret.addTab("Coq", new CodeTextPanel("", S.toCoq()));
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			ret.addTab("Coq", new CodeTextPanel("", ex.getMessage()));			
+			ret.addTab("Coq", new CodeTextPanel("", ex.getMessage()));
 		}
 		return Unit.unit;
 	}
-	
+
 	private static String strip(String s) {
 		return s.replace("\"", "");
 	}
-	
+
 	private <Ty, En, Sym, Fk, Att> Component viewDot2(Schema<Ty, En, Sym, Fk, Att> S) {
 		StringBuffer s = new StringBuffer("digraph G { graph[rankdir = LR]; splines=curved; layout=fdp ;");
 
 		for (var x : S.ens) // null
 		{
-			 var www2 = "\"" + strip(x.toString()) + "\"";
-             s.append(' ');
-             s.append(www2);
-             s.append(" [shape=plain ");
-             s.append("");
-             s.append(" fontsize=14 fontname=helvetica label=\"");
-             s.append(strip(x.toString()));
-             s.append("\"] ");
+			var www2 = "\"" + strip(x.toString()) + "\"";
+			s.append(' ');
+			s.append(www2);
+			s.append(" [shape=plain ");
+			s.append("");
+			s.append(" fontsize=14 fontname=helvetica label=\"");
+			s.append(strip(x.toString()));
+			s.append("\"] ");
 		}
 		for (var x : S.typeSide.tys) // null
 		{
-			 var www2 = "\"" + strip(x.toString()) + "\"";
-             s.append(' ');
-             s.append(www2);
-             s.append(" [shape=plain ");
-             s.append("");
-             s.append(" fontsize=14 fontname=helvetica label=\"");
-             s.append(strip(x.toString()));
-             s.append("\"] ");
+			var www2 = "\"" + strip(x.toString()) + "\"";
+			s.append(' ');
+			s.append(www2);
+			s.append(" [shape=plain ");
+			s.append("");
+			s.append(" fontsize=14 fontname=helvetica label=\"");
+			s.append(strip(x.toString()));
+			s.append("\"] ");
 		}
 		for (var x : S.ens) // null
 		{
 			for (var fk : S.fksFrom(x)) {
-	            var xx = "\"" + strip(x.toString()) + "\"";
-                var y = "\"" + strip(S.fks.get(fk).second.toString()) +  "\"";
-                s.append(' ');
-                s.append(xx);
-                s.append(" -> ");
-                s.append(y);
-                s.append(' ');
-                s.append("[color=gray40; penwidth=.66; label=\"");
-                s.append(strip(fk.toString()));
-                s.append("\"; arrowhead = vee]; ");
-    
-			} 
+				var xx = "\"" + strip(x.toString()) + "\"";
+				var y = "\"" + strip(S.fks.get(fk).second.toString()) + "\"";
+				s.append(' ');
+				s.append(xx);
+				s.append(" -> ");
+				s.append(y);
+				s.append(' ');
+				s.append("[color=gray40; penwidth=.66; label=\"");
+				s.append(strip(fk.toString()));
+				s.append("\"; arrowhead = vee]; ");
+
+			}
 			for (var fk : S.attsFrom(x)) {
-	            var xx = "\"" + strip(x.toString()) + "\"";
-                var y = "\"" + strip(S.atts.get(fk).second.toString()) +  "\"";
-                s.append(' ');
-                s.append(xx);
-                s.append(" -> ");
-                s.append(y);
-                s.append(' ');
-                s.append("[color=gray40; penwidth=.66; label=\"");
-                s.append(strip(fk.toString()));
-                s.append("\"; arrowhead = vee]; ");
-   
-			} 
+				var xx = "\"" + strip(x.toString()) + "\"";
+				var y = "\"" + strip(S.atts.get(fk).second.toString()) + "\"";
+				s.append(' ');
+				s.append(xx);
+				s.append(" -> ");
+				s.append(y);
+				s.append(' ');
+				s.append("[color=gray40; penwidth=.66; label=\"");
+				s.append(strip(fk.toString()));
+				s.append("\"; arrowhead = vee]; ");
+
+			}
 		}
 
 		return new JScrollPane(new JTextArea(s.toString() + " }"));
@@ -1515,52 +1515,52 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 			s.append(" label=\"");
 			s.append(x);
 			s.append("\"");
-			
+
 			for (var c : S.attsFrom(x)) {
-			    var www2 = "\"" + strip(x.toString()) + "." + strip(c.toString()) + "\"";
-                s.append(' ');
-                s.append(www2);
-                s.append(" [shape=plain ");
-                s.append("");
-                s.append(" fontsize=14 fontname=helvetica label=\"");
-                s.append(strip(c.toString()));
-                s.append("\"] ");
+				var www2 = "\"" + strip(x.toString()) + "." + strip(c.toString()) + "\"";
+				s.append(' ');
+				s.append(www2);
+				s.append(" [shape=plain ");
+				s.append("");
+				s.append(" fontsize=14 fontname=helvetica label=\"");
+				s.append(strip(c.toString()));
+				s.append("\"] ");
 			}
 			for (var c : S.fksFrom(x)) {
-			    var www2 = "\"" + strip(x.toString()) + "." + strip(c.toString()) + "\"";
-                s.append(' ');
-                s.append(www2);
-                s.append(" [shape=plain ");
-                s.append("");
-                s.append(" fontsize=14 fontname=helvetica label=\"");
-                s.append(strip(c.toString()));
-                s.append("\"] ");
+				var www2 = "\"" + strip(x.toString()) + "." + strip(c.toString()) + "\"";
+				s.append(' ');
+				s.append(www2);
+				s.append(" [shape=plain ");
+				s.append("");
+				s.append(" fontsize=14 fontname=helvetica label=\"");
+				s.append(strip(c.toString()));
+				s.append("\"] ");
 			}
-			  var www2 = "\"" + strip(x.toString()) + "." + "id" + "\"";
-              s.append(' ');
-              s.append(www2);
-              s.append(" [shape=plain ");
-              s.append("");
-              s.append(" fontsize=14 fontname=helvetica label=\"");
-              s.append("id");
-              s.append("\"] ");
-  			s.append(" } ");
+			var www2 = "\"" + strip(x.toString()) + "." + "id" + "\"";
+			s.append(' ');
+			s.append(www2);
+			s.append(" [shape=plain ");
+			s.append("");
+			s.append(" fontsize=14 fontname=helvetica label=\"");
+			s.append("id");
+			s.append("\"] ");
+			s.append(" } ");
 
 		}
 		for (var x : S.ens) {
 			for (var fk : S.fksFrom(x)) {
-	            var xx = "\"" + strip(x.toString()) + "." + strip(fk.toString()) + "\"";
-                var y = "\"" + strip(S.fks.get(fk).second.toString()) + "." + "id" +  "\"";
-                s.append(' ');
-                s.append(xx);
-                s.append(" -> ");
-                s.append(y);
-                s.append(' ');
-                s.append("[color=gray40; penwidth=.66; edgetooltip=\"");
-                s.append(strip(fk.toString()));
-                s.append("\"; arrowhead = vee]; ");
-    
-			} 
+				var xx = "\"" + strip(x.toString()) + "." + strip(fk.toString()) + "\"";
+				var y = "\"" + strip(S.fks.get(fk).second.toString()) + "." + "id" + "\"";
+				s.append(' ');
+				s.append(xx);
+				s.append(" -> ");
+				s.append(y);
+				s.append(' ');
+				s.append("[color=gray40; penwidth=.66; edgetooltip=\"");
+				s.append(strip(fk.toString()));
+				s.append("\"; arrowhead = vee]; ");
+
+			}
 		}
 
 		return new JScrollPane(new JTextArea(s.toString() + " }"));
@@ -1702,11 +1702,11 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 			Query<Ty, En1, Sym, Fk1, Att1, En2, Fk2, Att2> q) {
 		try {
 
-			 Map<En2, String> l = q.toSQL2();
-			 StringBuffer sb = new StringBuffer();
-			 for (var x : l.entrySet()) {
-				 	sb.append("INSERT INTO " + x.getKey() + " " + x.getValue() + ";\n\n");
-			 }
+			Map<En2, String> l = q.toSQL2();
+			StringBuffer sb = new StringBuffer();
+			for (var x : l.entrySet()) {
+				sb.append("INSERT INTO " + x.getKey() + " " + x.getValue() + ";\n\n");
+			}
 			return new CodeTextPanel("", sb.toString());
 		} catch (Exception ex) {
 			// ex.printStackTrace();
@@ -1727,7 +1727,7 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 			ret.addTab("Coq", new CodeTextPanel("", M.toCoq()));
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			ret.addTab("Coq", new CodeTextPanel("", ex.getMessage()));		
+			ret.addTab("Coq", new CodeTextPanel("", ex.getMessage()));
 		}
 		ret.addTab("TPTP", new CodeTextPanel("", M.toTptp()));
 		return Unit.unit;
@@ -1780,21 +1780,21 @@ public final class CqlViewer implements SemanticsVisitor<Unit, JTabbedPane, Runt
 	}
 
 	@Override
-	public <N> Unit visit(String k, JTabbedPane arg, ColimitSchema<N> S)  {
+	public <N> Unit visit(String k, JTabbedPane arg, ColimitSchema<N> S) {
 		return visit(k, arg, S.schemaStr);
 	}
 
 	@SuppressWarnings("hiding")
 	@Override
-	public Unit visit(String k, JTabbedPane arg, Constraints S)  {
-		
+	public Unit visit(String k, JTabbedPane arg, Constraints S) {
+
 //		arg.addTab("Egglog", new CodeTextPanel("", EgglogProver.toEgglog(S, null)));
 
 		return Unit.unit;
 	}
 
 	@Override
-	public Unit visit(String k, JTabbedPane pane, ApgTypeside t)  {
+	public Unit visit(String k, JTabbedPane pane, ApgTypeside t) {
 
 		Object[][] rowData = new Object[t.Bs.size()][3];
 		Object[] colNames = new Object[2];

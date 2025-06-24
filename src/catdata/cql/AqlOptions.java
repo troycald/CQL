@@ -80,7 +80,7 @@ public final class AqlOptions {
 		allow_java_eqs_unsafe, require_consistency, timeout, dont_verify_is_appropriate_for_prover_unsafe,
 		dont_validate_unsafe, static_typing, prover, start_ids_at, coproduct_allow_entity_collisions_unsafe,
 		coproduct_allow_type_collisions_unsafe, import_col_seperator, csv_import_prefix, csv_prepend_entity,
-		csv_row_sort_order, prepend_entity_on_ids, jdbc_export_truncate_after, import_missing_is_empty,
+		csv_row_sort_order, prepend_entity_on_ids, jdbc_export_truncate_after, import_missing_is_empty, csv_import_skolem_nulls,
 		jdbc_query_export_convert_type, e_path, vampire_path, completion_unfailing, graal_language,
 		triviality_check_best_effort, use_egglog_for_chase, check_command_export_file, jdbc_zero, oracle_schema_mode,
 		csv_utf8_bom, egglog_path, egglog_bound;
@@ -176,6 +176,7 @@ public final class AqlOptions {
 	// @SuppressWarnings("static-method")
 	private static Object getDefault(AqlOption option) {
 		return switch (option) {
+		case csv_import_skolem_nulls -> false;
 		case use_egglog_for_chase -> false;
 		case egglog_path -> "/usr/local/bin/egglog";
 		case egglog_bound -> 8;
@@ -315,6 +316,7 @@ public final class AqlOptions {
 	private static Object getFromMap(Map<String, String> map, /* Collage<Ty, En, Sym, Fk, Att, Gen, Sk> col, */
 			AqlOption op) {
 		return switch (op) {
+		case csv_import_skolem_nulls -> op.getBoolean(map);
 		case use_egglog_for_chase -> op.getBoolean(map);
 		case egglog_path -> op.getString(map);
 		case egglog_bound -> op.getInteger(map);

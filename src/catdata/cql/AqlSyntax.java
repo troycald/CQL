@@ -40,9 +40,9 @@ public enum AqlSyntax {
   ApgTransExpCoEqualizeU,
 
   CommentExp, ColimSchExpPseudo, ColimSchExpQuotient, MapExpPseudo, ColimSchExpRaw, ColimSchExpVar, ColimSchExpWrap, ColimSchExpModify, EdsExpVar, SchExpFront, SchExpTinkerpop, EdsExpTinkerpop,
-  EdsExpRaw, EdsExpSch, GraphExpRaw, GraphExpVar, InstExpAnonymize, InstExpCascadeDelete, InstExpChase, InstExpFrozen,
+  EdsExpRaw, EdsExpSch, GraphExpRaw, GraphExpVar, InstExpAnonymize, InstExpCascadeDelete, InstExpChase, InstExpFrozen, InstExpInclude, 
   PragmaExpTinkerpop, PragmaExpBitsy, PragmaExpTinkerpopInstExport, InstExpTinkerpop, // EdsExpOracle, EdsExpMySql, 
-  InstExpCoEq, InstExpCoEval, InstExpCoProdFull, InstExpMarkdown, TyExpRdf, InstExpSpanify, SchExpSpan
+  InstExpCoEq, InstExpCoEval, InstExpCoProdFull, InstExpMarkdown, TyExpRdf, InstExpSpanify, SchExpSpan, SchExpDiff
   , QueryExpSpanify, QueryExpMapToSpanQuery, InstExpCod, InstExpColim, InstExpDelta, InstExpDiff, InstExpDistinct, InstExpDom, InstExpEmpty, InstExpEval,
   InstExpPi, InstExpPivot, InstExpSigma, InstExpSigmaChase, InstExpVar, InstExpCsv, EdsExpInclude, QueryExpFront //, TyExpExcel, InstExpExcel
   , InstExpJdbc, InstExpRdfAll, PragmaExpRdfDirectExport, PragmaExpRdfInstExport, InstExpJsonAll, InstExpXmlAll //, PragmaExpToExcelInst

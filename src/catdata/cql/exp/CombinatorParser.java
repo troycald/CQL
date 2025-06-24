@@ -298,6 +298,8 @@ public class CombinatorParser implements IAqlParser {
 				cod2 = Parsers.tuple(token("cod_m"), map_ref.lazy()).map(x -> new SchExpDst(x.b)),
 				dom2 = Parsers.tuple(token("dom_m"), map_ref.lazy()).map(x -> new SchExpSrc(x.b)),
 
+						diff = Parsers.tuple(token("except"), sch_ref.lazy(), sch_ref.lazy()).map(x -> new SchExpDiff(x.b, x.c)),
+				
 				rdf = token("rdf").map(x -> new SchExpRdf()),
 				prefix = Parsers.tuple(token("prefix"), sch_ref.lazy(), ident).map(x -> new SchExpPrefix(x.b, x.c)),
 				front = Parsers.tuple(token("front"), eds_ref.lazy(), ident).map(x -> new SchExpFront(x.b, x.c)),
@@ -325,7 +327,7 @@ public class CombinatorParser implements IAqlParser {
 
 				tp = (token("tinkerpop")).map(x -> new SchExpTinkerpop()),
 
-				ret = Parsers.or(inst, csv, empty, unit, rdf, ms_sql, ms_sql2, front, ms_sql3, ms_sql4, ms_sql5,
+				ret = Parsers.or(inst, csv, empty, unit, rdf, diff, ms_sql, ms_sql2, front, ms_sql3, ms_sql4, ms_sql5,
 						spanify, prefix, schExpRaw(), var, all, colim, parens(sch_ref), pivot, tp, cod, dom, cod2,
 						dom2);
 
@@ -489,6 +491,9 @@ public class CombinatorParser implements IAqlParser {
 						.tuple(token("pivot"), inst_ref.lazy(), options.between(token("{"), token("}")).optional())
 						.map(x -> new InstExpPivot(x.b, x.c == null ? new LinkedList() : x.c)),
 
+				include = Parsers.tuple(token("include"), inst_ref.lazy(), token(":"), sch_ref.lazy())
+				.map(x->new InstExpInclude(x.b, x.d)),
+						
 				eval = Parsers
 						.tuple(token("eval"), query_ref.lazy(), inst_ref.lazy(),
 								options.between(token("{"), token("}")).optional())
@@ -510,7 +515,7 @@ public class CombinatorParser implements IAqlParser {
 
 		Parser ret = Parsers.or(queryQuotientExpRaw(), sigma_chase, l2, pi, frozen, instExpRand(), instExpCoEq(),
 				instExpRdfAll(), instExpXmlAll(), /* instExpMd(), */ instExpJsonAll(), chase, instExpJdbc(), empty,
-				instExpRaw(), var, sigma, spanify, delta, core, ms_sql3, distinct, eval, colimInstExp(), dom, cd, anon,
+				instExpRaw(), var, sigma, include, spanify, delta, core, ms_sql3, distinct, eval, colimInstExp(), dom, cd, anon,
 				except, pivot, cod, skolem, instExpCsv(), coeval, /* excel, */ instExpJdbcDirect(), instExpTinkerpop(),
 				parens(inst_ref));
 

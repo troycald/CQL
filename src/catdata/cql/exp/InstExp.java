@@ -172,7 +172,9 @@ public abstract class InstExp<Gen, Sk, X, Y> extends Exp<Instance<String, String
 
 		public abstract <Gen, Sk, X, Y> R visit(P param, InstExpSkolem<Gen, Sk, X, Y> exp) throws E;
 
-		public abstract <Gen, Sk, X, Y> R visit(P param, InstExpCore<Gen, Sk, X, Y> exp);
+		public abstract <Gen, Sk, X, Y> R visit(P param, InstExpCore<Gen, Sk, X, Y> exp) throws E;
+
+		public abstract <Gen, Sk, X, Y>  R visit(P param, InstExpInclude<Gen, Sk, X, Y> instExpInclude) throws E ;
 
 		// public abstract R visit(P param, InstExpExcel instExpExcel);
 	}

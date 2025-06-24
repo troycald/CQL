@@ -117,7 +117,7 @@ public class SchExpCsv extends SchExp {
 		File[] files = f.listFiles();
 		String vc = "String";
 		for (File xx : files) {
-			if (xx.toString().startsWith("."))
+			if (xx.toString().startsWith(".") || xx.toString().contains(".DS_Store")) 
 				continue;
 			try {
 				Reader r = new FileReader(xx);
