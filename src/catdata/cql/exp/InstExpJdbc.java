@@ -56,7 +56,10 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 	@Override
 	protected synchronized Connection start(Schema<String, String, Sym, Fk, Att> sch) throws SQLException {
 		if (!sch.typeSide.syms.keySet().containsAll(SqlTypeSide.syms().keySet())) {
-			throw new RuntimeException("CSV import must be onto sql typeside.");
+			throw new RuntimeException("SQL import must be onto sql typeside.");
+		}
+		if (!sch.fks.isEmpty()) {
+			throw new RuntimeException("SQL import must be onto attributes only");
 		}
 		for (String s : map.keySet()) {
 			if (!sch.ens.contains((s))) {
@@ -111,6 +114,7 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 		return sb.toString();
 	}
 
+	static int fresh=0;
 	@Override
 	protected synchronized void joinedEn(Connection conn, String en, String s,
 			Schema<String, String, Sym, Fk, Att> sch) {
@@ -126,21 +130,15 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 			stmt.execute(s);
 			ResultSet rs = stmt.getResultSet();
 			ResultSetMetaData rsmd = rs.getMetaData();
-			checkColumns(en, s, sch, rsmd);
+			checkColumns(en, s, sch, rsmd, (boolean)op.getOrDefault(AqlOption.import_missing_is_empty));
 
 			while (rs.next()) {
-				Object gen = rs.getObject(idCol);
-				if (gen == null) {
-					stmt.close();
-					rs.close();
-					conn.close();
-					throw new RuntimeException("Encountered a NULL generator in ID column " + idCol);
-				}
+				Object gen = fresh++;
 				String g1 = toGen(en, gen.toString()); // store strings
 				data.get(en).put(g1, new Pair<>(new THashMap<>(sch.fksFrom(en).size(), 2),
 						new THashMap<>(sch.attsFrom(en).size(), 2)));
 
-				for (Fk fk : sch.fksFrom(en)) {
+				/*for (Fk fk : sch.fksFrom(en)) {
 					Object rhs = rs.getObject(fk.convert());
 
 					if (rhs == null) {
@@ -153,30 +151,34 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 					String g2 = toGen(en2, rhs.toString()); // store strings
 
 					data.get(en).get(g1).first.put(fk, g2);
-				}
+				}*/
 				for (Att att : sch.attsFrom(en)) {
-					Object rhs = rs.getObject(att.convert());
+					Object rhs = rs.getObject(att.str);
 					String ty = sch.atts.get(att).second;
 					data.get(en).get(g1).second.put(att, objectToSk(sch, rhs, g1, att, ty));
 				}
 
 			}
 		} catch (SQLException ex) {
+			System.out.println("-----");
+			ex.printStackTrace();
 			if (!(boolean) op.getOrDefault(AqlOption.import_null_on_err_unsafe)) {
 				throw new RuntimeException("SQL error (consider option import_null_on_err_unsafe=true\n\n"
 						+ ex.getMessage() + "\n\nQuery " + s);
 			}
 //      System.out.println("\n\nQuery " + s);
-			ex.printStackTrace();
+			
 		}
 
 	}
 
-	private void checkColumns(String en, String s, Schema<String, String, Sym, Fk, Att> sch, ResultSetMetaData rsmd)
+	private void checkColumns(String en, String s, Schema<String, String, Sym, Fk, Att> sch, ResultSetMetaData rsmd, boolean ignore)
 			throws SQLException {
 		Set<String> colNames = new TreeSet<>();
 		for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+			
 			String colName = rsmd.getColumnLabel(i);
+			
 			if (!(colName.equalsIgnoreCase(idCol)
 					|| Util.containsUpToCase(sch.attsFrom(en).stream().map(x -> x.str).collect(Collectors.toList()),
 							colName)
@@ -192,14 +194,14 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 				throw new RuntimeException("Attribute " + att + " has no column in \n\n" + s);
 			}
 		}
-		for (Fk fk : sch.fksFrom(en)) {
+	/*	for (Fk fk : sch.fksFrom(en)) {
 			if (!Util.containsUpToCase(colNames, fk.str)) {
 				throw new RuntimeException("Foreign key " + fk + " has no column in \n\n" + s);
 			}
-		}
+		} 
 		if (!Util.containsUpToCase(colNames, idCol)) {
 			throw new RuntimeException("No ID column " + idCol + " in \n\n" + s);
-		}
+		} */
 	}
 
 	@Override

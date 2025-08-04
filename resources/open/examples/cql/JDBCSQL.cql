@@ -68,23 +68,17 @@ schema S = literal : sql {
 	entities
 		Employee 
 		Department
-	foreign_keys
-		manager   : Employee -> Employee
-		worksIn   : Employee -> Department
-		secretary : Department -> Employee
-	path_equations 
-		Employee.manager.worksIn = Employee.worksIn
-  		Department.secretary.worksIn = Department
-  		Employee.manager.manager = Employee.manager
   	attributes
-  		first last	: Employee -> Varchar
-     	age			: Employee -> Integer
-     	name 		: Department -> Varchar
+  		id : Employee -> Varchar
+  		id : Department -> Varchar
+  		first last manager worksIn : Employee -> Varchar
+     	age	: Employee -> Integer
+     	name secretary : Department -> Varchar
  }
 
 #import an instance by providing queries for each entity
 instance J = import_jdbc ""  : S {
-#use name as first name
+ #use name as first name
   #use null as last name
   #use id as age	
 	Employee -> "SELECT id, manager, worksIn, name AS first, 'lname' as last, id AS age FROM Employee"
@@ -96,14 +90,6 @@ instance J = import_jdbc ""  : S {
 		prepend_entity_on_ids = false
 }
 
-#import a transform by providing queries for each entity
-transform Jid = import_jdbc ""  : J -> J {
-	Employee -> "SELECT id, id FROM Employee"
-	Department -> "SELECT id, id FROM Department"
-
-	options
-		prepend_entity_on_ids = false
-}
 
 #export the instance to SQL
 command store1 = export_jdbc_instance J ""  "Exported"
@@ -115,16 +101,6 @@ command view1 = exec_jdbc ""  {
 	"SELECT * FROM ExportedDepartment"
 }
 
-#export the transform to SQL
-command store2 = export_jdbc_transform Jid ""  "ExportedTrans" 
- { options start_ids_at = 100 } #src
- { options start_ids_at = 100 } #dst
-
-#view the exported SQL transform
-command view2 = exec_jdbc ""  { 
-	"SELECT * FROM ExportedTransEmployee"
-	"SELECT * FROM ExportedTransDepartment"
-}
 
 
 ##########
@@ -160,36 +136,3 @@ instance J2 = import_jdbc_direct "" "ROW_NUMBER() OVER ()" : S_direct2
 #"javax.swing.JOptionPane.showMessageDialog(null, \"hello1\")"
 #"javax.swing.JOptionPane.showMessageDialog(null, \"hello2\")"
 #}
-
-#store query evaluation as a view
-
-query Q = literal : S -> S {
-	entity
-		Employee -> 
-		{from e:Employee d:Department
-		 where e.worksIn = d
-		 attributes first -> e.manager.first 
-		        last -> d.name 
-		        age -> e.age
-		        foreign_keys manager -> {e -> e.manager
-		            d -> e.manager.worksIn}
-		worksIn -> {d -> e.worksIn}
-		}
-		
-		entity Department -> {from d:Department 
-		               attributes name -> d.name
-		               foreign_keys secretary -> {e -> d.secretary 
-		              d -> d}}
-		
-	
-		
-}
-
-command store_id_query = export_jdbc_query Q "" "Exported" "View"
-
-command view_view = exec_jdbc ""  { 
-	"SELECT * FROM ViewEmployee"
-	"SELECT * FROM ViewDepartment"
-	"DROP VIEW ViewEmployee"
-	"DROP VIEW ViewDepartment" #clean up is important when re-running the program
-}

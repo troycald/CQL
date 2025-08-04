@@ -28,6 +28,7 @@ public class PragmaExpToJdbcInst<X, Y> extends PragmaExp {
 		set.add(AqlOption.start_ids_at);
 		set.add(AqlOption.is_oracle);
 		set.add(AqlOption.emit_ids);
+		set.add(AqlOption.emit_nulls);		
 		set.add(AqlOption.id_column_name);
 		set.add(AqlOption.varchar_length);
 		set.add(AqlOption.jdbc_export_truncate_after);

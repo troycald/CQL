@@ -47,6 +47,8 @@ public final class PragmaExpToCsvInst<X, Y> extends PragmaExp {
 		set.add(AqlOption.prepend_entity_on_ids);
 		set.add(AqlOption.id_column_name);
 		set.add(AqlOption.csv_row_sort_order);
+		set.add(AqlOption.emit_nulls);
+		
 
 	}
 

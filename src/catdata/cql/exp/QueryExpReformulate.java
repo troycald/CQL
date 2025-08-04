@@ -512,7 +512,7 @@ public class QueryExpReformulate extends QueryExp {
 
 		});
 
-//		 System.out.println( Util.sep(qs, "\n") );
+		// System.out.println( Util.sep(qs, "\n") );
 
 		return qs.get(idx);
 	}

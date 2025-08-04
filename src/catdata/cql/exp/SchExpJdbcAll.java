@@ -148,6 +148,7 @@ public class SchExpJdbcAll extends SchExp {
 			toGet = (String) ops.getOrDefault(AqlOption.jdbc_default_string);
 		}
 		boolean oracleSchMode = (Boolean) ops.getOrDefault(AqlOption.oracle_schema_mode);
+		boolean isHive = (boolean) ops.getOrDefault(AqlOption.jdbc_is_hive);
 		TypeSide<String, Sym> typeSide = SqlTypeSide.SqlTypeSide(ops);
 
 		Collage<String, String, Sym, Fk, Att, Void, Void> col0 = new CCollage<>(typeSide.collage());
@@ -179,8 +180,12 @@ public class SchExpJdbcAll extends SchExp {
 								+ col0.atts().get(Att.Att((x), c.name)).first
 								+ "\n\n.Possible solution: set option jdbc_import_col_seperator so as to avoid name collisions.");
 					}
-
-					col0.atts().put(Att.Att(x,  c.name), new Pair<>(x, (sqlTypeToAqlType(typeSide, c.type.name))));
+					if (isHive) {
+						int a = x.indexOf('.');
+						col0.atts().put(Att.Att(x,  x.substring(a+1) + "." + c.name), new Pair<>(x, (sqlTypeToAqlType(typeSide, c.type.name))));						
+					} else {
+						col0.atts().put(Att.Att(x,  c.name), new Pair<>(x, (sqlTypeToAqlType(typeSide, c.type.name))));
+					}
 				}
 			}
 			return new Schema<>(typeSide, col0, new AqlOptions(options, env.defaults));

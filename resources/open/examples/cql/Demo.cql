@@ -107,22 +107,6 @@ options
 	quotient_use_chase = false
 }
 
-################################################################################################
-# export the warehouse to SQL
-command storeWH = export_jdbc_instance Warehouse "" ""
-
-#view exported SQL instance
-command view1 = exec_jdbc ""  {
-	"SELECT * FROM \"Animal\""
-	"SELECT * FROM \"Amphibian\""
-	"SELECT * FROM \"Land\""
-	"SELECT * FROM \"Water\""
-
-"DROP TABLE \"Amphibian\""
-"DROP TABLE \"Land\""
-"DROP TABLE \"Water\""
-	"DROP TABLE \"Animal\"" #drop tables in case we want to run the demo again
-}
 
 ################################################################################################
 # Application 0 : View warehouse as graph

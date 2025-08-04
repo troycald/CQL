@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Date;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -184,7 +183,12 @@ public class IDE {
 		try {
 			Class.forName("oracle.jdbc.OracleDriver");
 		} catch (ClassNotFoundException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
+		}
+		try {
+			Class.forName("org.apache.hive.jdbc.HiveDriver");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 

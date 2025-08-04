@@ -543,19 +543,19 @@ public final class Schema<Ty, En, Sym, Fk, Att> implements Semantics {
 	// (k,q,f) where q is a bunch of drops and then adds and f is the adding of
 	// constraints and
 	public synchronized Map<En, Triple<List<Chc<Fk, Att>>, List<String>, List<String>>> toSQL(String prefix,
-			String idTy, String idCol, boolean truncate, int vlen, String tick, boolean isOracle) {
+			String idTy, String idCol, boolean truncate, int vlen, String tick, boolean isOracle, boolean isHive) {
 		Map<En, Triple<List<Chc<Fk, Att>>, List<String>, List<String>>> sqlSrcSchs = new LinkedHashMap<>();
 		
 		for (En en1 : Util.alphabetical(ens)) {
 			List<String> l = new LinkedList<>();
 			List<Chc<Fk, Att>> k = new LinkedList<>();
-			if (idCol != null) {
-				l.add(tick + idCol + tick + " " + idTy  + " primary key" );
+			if (idCol != null && !isHive) {
+				l.add((tick + idCol + tick + " " + idTy)  + (" primary key") );
 			}
 			List<String> f = new LinkedList<>();
 			for (Fk fk1 : fksFrom(en1)) {
 			
-				l.add(tick + truncate(Chc.inLeft(fk1), truncate) + tick + " " + idTy + " not null ");
+				l.add(tick + truncate(Chc.inLeft(fk1), truncate) + tick + " " + idTy + (isHive ? "" : " not null "));
 				k.add(Chc.inLeft(fk1));
 			//	f.add("alter table " + tick + prefix + truncate(en1, truncate) + tick + " add constraint " + tick
 			//			+ prefix + constraint_static++ + tick + " foreign key (" + tick

@@ -22,7 +22,7 @@ public class AqlCmdLineDarpa {
 	public static <Ty, En, Sym, Fk, Att> String schemaToSql(Schema<Ty, En, Sym, Fk, Att> S) {
 		// prefix, type of ID, ID col name , truncater, printer, varchar length
 		Map<En, Triple<List<Chc<Fk, Att>>, List<String>, List<String>>> sch_sql = S.toSQL("", "Integer", "ID", false,
-				255, "\"", false);
+				255, "\"", false, false);
 
 		// (k,q,f) where q is a bunch of drops and then adds and f is the adding of
 		// constraints and

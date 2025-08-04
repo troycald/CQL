@@ -585,7 +585,7 @@ public abstract class Algebra<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> /* implements
 			Pair<TObjectIntMap<X>, TIntObjectMap<X>> j, int vlen) {
 		try {
 			Map<En, Triple<List<Chc<Fk, Att>>, List<String>, List<String>>> xxx = schema().toSQL("", "integer",
-					Query.internal_id_col_name, true, vlen, "", false);
+					Query.internal_id_col_name, true, vlen, "", false, false);
 			// System.out.println(xxx);
 			Connection conn = DriverManager.getConnection("jdbc:h2:mem:db_temp_" + session_id++ + ";DB_CLOSE_DELAY=-1");
 			String tick = "";
@@ -619,7 +619,7 @@ public abstract class Algebra<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> /* implements
 						hdr.add(tick + schema().truncate(chc, true) + tick); // TODO aql unsafe
 					}
 					for (X x : en(en1)) {
-						storeMyRecord(true, hdrQ, hdr, j, conn, x, qqq.first, en1, "", "", true);
+						storeMyRecord(true, hdrQ, hdr, j, conn, x, qqq.first, en1, "", "", true, false);
 					}
 				}
 
@@ -669,7 +669,7 @@ public abstract class Algebra<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> /* implements
 
 	public synchronized void storeMyRecord(boolean emitIds, List<String> hdrQ, List<String> hdr,
 			Pair<TObjectIntMap<X>, TIntObjectMap<X>> j, Connection conn2, X x, List<Chc<Fk, Att>> header, En en,
-			String prefix, String tick, boolean truncate) throws Exception {
+			String prefix, String tick, boolean truncate, boolean emitNulls) throws Exception {
 
 		StringBuffer sb = new StringBuffer("INSERT INTO ");
 		sb.append(tick);
@@ -709,7 +709,7 @@ public abstract class Algebra<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> /* implements
 			if (chc.left) {
 				ps.setObject(i + 1 + k, j.first.get(fk(chc.l, x)), Types.INTEGER);
 			} else {
-				Object o = fromTerm(SqlTypeSide.getSqlType(schema().atts.get(chc.r).second.toString()), att(chc.r, x));
+				Object o = fromTerm(SqlTypeSide.getSqlType(schema().atts.get(chc.r).second.toString()), att(chc.r, x), emitNulls);
 				ps.setObject(i + 1 + k, o, SqlTypeSide.getSqlType(schema().atts.get(chc.r).second.toString()));
 			}
 			i++;
@@ -720,8 +720,8 @@ public abstract class Algebra<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> /* implements
 	}
 
 	
-	//private Map<Y, Integer> forSql = new HashMap<>();
-	private Object fromTerm(int sqlty, Term<Ty, Void, Sym, Void, Void, Void, Y> term) {
+	private Map<Y, Integer> forSql = new HashMap<>();
+	private Object fromTerm(int sqlty, Term<Ty, Void, Sym, Void, Void, Void, Y> term, boolean emitNulls) {
 		if (term.obj() != null) {
 			Optional<?> o = (Optional<?>) term.obj();
 			if (o.isPresent()) {
@@ -729,7 +729,7 @@ public abstract class Algebra<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> /* implements
 			}
 		}
 	//	System.out.println("ret null");
-		/*	if (sqlty == Types.VARCHAR || sqlty == Types.LONGVARCHAR || sqlty == Types.NVARCHAR) {
+		if (emitNulls && sqlty == Types.VARCHAR || sqlty == Types.LONGVARCHAR || sqlty == Types.NVARCHAR) {
 			if (term.sk() != null) {
 				if (forSql.containsKey(term.sk())) {
 					return "?" + forSql.get(term.sk());
@@ -738,7 +738,7 @@ public abstract class Algebra<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> /* implements
 					return "?" + forSql.get(term.sk());
 				}
 			}
-		} */
+		} 
 		return null;
 	}
 

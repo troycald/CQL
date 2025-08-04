@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +16,9 @@ import catdata.Pair;
 import catdata.Triple;
 import catdata.Util;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Instance;
 import catdata.cql.Pragma;
-import catdata.cql.AqlOptions.AqlOption;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TObjectIntMap;
 
@@ -34,10 +35,11 @@ public class ToJdbcPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends P
 	private final int len;
 	private AqlOptions options;
 	private final boolean emitIds;
+	private final boolean emitNulls;
 
 	public ToJdbcPragmaInstance(String prefix, Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> I, String jdbcString,
 			AqlOptions options) {
-
+		
 		this.jdbcString = jdbcString;
 		this.prefix = prefix;
 		this.I = I;
@@ -47,19 +49,20 @@ public class ToJdbcPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends P
 		// truncate = (Integer)
 		// options.getOrDefault(AqlOption.jdbc_export_truncate_after);
 		tick = (String) options.getOrDefault(AqlOption.jdbc_quote_char);
+		emitNulls = (boolean) options.getOrDefault(AqlOption.emit_nulls);
 		this.options = options;
 
 		assertDisjoint(idCol);
 	}
 
 	private void deleteThenCreate(Connection conn) throws SQLException {
-		Map<En, Triple<List<Chc<Fk, Att>>, List<String>, List<String>>> m = I.schema().toSQL(prefix, "integer", emitIds ? idCol : null,
-				false, len, tick, (boolean) options.getOrDefault(AqlOption.is_oracle));
+		Map<En, Triple<List<Chc<Fk, Att>>, List<String>, List<String>>> m = I.schema().toSQL(prefix, "integer",  null,
+				false, len, tick, (boolean) options.getOrDefault(AqlOption.is_oracle), (boolean) options.getOrDefault(AqlOption.jdbc_is_hive));
 		Statement stmt = conn.createStatement();
 		for (En en : I.schema().ens) {
 			for (String x : m.get(en).second) {
 				// TODO aql drop foreign keys here first
-				// System.out.println(x);
+				 System.out.println(x);
 				stmt.execute(x);
 			}
 		}
@@ -69,24 +72,27 @@ public class ToJdbcPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends P
 	@Override
 	public void execute() {
 		try {
+			if (!I.schema().fks.isEmpty()) {
+				throw new Exception("Cannot export FKs to SQL");
+			}
 			// Map<En, Triple<List<Chc<Fk, Att>>, List<String>, List<String>>> zzz =
 			// I.schema().toSQL(prefix, "integer",
 			// idCol, false, len, tick);
 			// System.out.println(zzz);
 			Connection conn = DriverManager.getConnection(jdbcString);
 			deleteThenCreate(conn);
-			Pair<TObjectIntMap<X>, TIntObjectMap<X>> II = I.algebra()
-					.intifyX((int) options.getOrDefault(AqlOption.start_ids_at));
+		//	Pair<TObjectIntMap<X>, TIntObjectMap<X>> II = I.algebra()
+		//			.intifyX((int) options.getOrDefault(AqlOption.start_ids_at));
 
 			for (En en : I.schema().ens) {
 				List<Chc<Fk, Att>> header = headerFor(en);
 				List<String> hdrQ = new ArrayList<>(header.size() + (emitIds ? 1 : 0));
 				List<String> hdr = new ArrayList<>(header.size() + (emitIds ? 1 : 0));
 		//		System.out.println("Emit ids " + emitIds);
-				if (emitIds) {
-					hdr.add(tick + idCol + tick);
-					hdrQ.add("?");
-				}
+			//	if (emitIds) {
+	//				hdr.add(tick + idCol + tick);
+	//				hdrQ.add("?");
+	//			}
 				for (Chc<Fk, Att> aHeader : header) {
 					hdrQ.add("?");
 					Chc<Fk, Att> chc = aHeader;
@@ -98,7 +104,7 @@ public class ToJdbcPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends P
 				}
 				for (X x : I.algebra().en(en)) {
 					//System.out.println("store ");
-					I.algebra().storeMyRecord(emitIds, hdrQ, hdr, II, conn, x, header, en, prefix, tick, false);
+					I.algebra().storeMyRecord(false, hdrQ, hdr, null, conn, x, header, en, prefix, tick, false, emitNulls);
 				}
 			//	System.out.println("--");
 

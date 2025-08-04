@@ -5,8 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +19,10 @@ import org.apache.commons.csv.QuoteMode;
 import catdata.Pair;
 import catdata.Util;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.Instance;
 import catdata.cql.Pragma;
 import catdata.cql.Term;
-import catdata.cql.AqlOptions.AqlOption;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.THashMap;
@@ -57,7 +57,8 @@ public class ToCsvPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Pr
 		this.I = I;
 	}
 
-	public static <Ty, Sym, Y> String print(Term<Ty, Void, Sym, Void, Void, Void, Y> term) {
+	public <Ty, Sym, Y> String print(Term<Ty, Void, Sym, Void, Void, Void, Y> term, Map<Y, String> nulls,
+			boolean emit_nulls) {
 		if (term.obj() != null) {
 			if (term.obj() instanceof Optional) {
 				if (((Optional) term.obj()).isPresent()) {
@@ -70,6 +71,14 @@ public class ToCsvPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Pr
 																				// comes out as empty string
 		} else if (term.sym() != null && term.args.isEmpty()) {
 			return term.toString();
+		} else if (term.sk() != null && emit_nulls) {
+			String ret = nulls.get(term.sk());
+			if (ret != null) {
+				return ret;
+			}
+			String x = "?" + nulls.size();
+			nulls.put(term.sk(), x);
+			return x;
 		}
 		return null;
 	}
@@ -119,13 +128,14 @@ public class ToCsvPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Pr
 			int startId = (int) op.getOrDefault(AqlOption.start_ids_at);
 			boolean csv_emit_ids = (boolean) op.getOrDefault(AqlOption.emit_ids);
 			String order = (String) op.getOrDefault(AqlOption.csv_row_sort_order);
-			
+			boolean emit_nulls = (boolean) op.getOrDefault(AqlOption.emit_nulls);
+
 			for (En en : I.schema().ens) {
 				StringBuffer sb = new StringBuffer();
 				CSVPrinter printer = new CSVPrinter(sb, getFormat(op));
 
 				List<String> header = new LinkedList<>();
-				if (!csv_emit_ids && idCol.equals("id")) {
+				if (!csv_emit_ids && idCol.equals(idCol)) {
 
 				} else {
 					header.add(idCol);
@@ -138,7 +148,7 @@ public class ToCsvPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Pr
 				}
 				printer.printRecord(header);
 				Pair<TObjectIntMap<X>, TIntObjectMap<X>> J = I.algebra().intifyX(startId);
-				
+
 				Iterable<X> xs = I.algebra().en(en);
 				if (!order.trim().isBlank()) {
 					List<X> vs0 = new LinkedList<X>();
@@ -153,13 +163,13 @@ public class ToCsvPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Pr
 							xxx.add(catdata.cql.exp.Att.Att(en.toString(), yy[1].toString()));
 						}
 					}
-					
+
 					Comparator<X> comp = new Comparator<X>() {
 						@Override
 						public int compare(X o1, X o2) {
 							for (catdata.cql.exp.Att att : xxx) {
-								String u1 = I.algebra().att((Att)att, o1).toString();
-								String u2 = I.algebra().att((Att)att, o2).toString();
+								String u1 = I.algebra().att((Att) att, o1).toString();
+								String u2 = I.algebra().att((Att) att, o2).toString();
 								int i = u1.compareTo(u2);
 								if (i < 0 || i > 0) {
 									return i;
@@ -169,15 +179,15 @@ public class ToCsvPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Pr
 							return 0;
 						}
 					};
-					
-					vs0.sort(comp );
+
+					vs0.sort(comp);
 					xs = vs0;
 				}
-				
+				Map<Y, String> nulls = new HashMap<>();
 				for (X x : xs) {
 					List<String> row = new LinkedList<>();
 
-					if (!csv_emit_ids && idCol.equals("id")) {
+					if (!csv_emit_ids && idCol.equals(idCol)) {
 
 					} else {
 						row.add(Integer.toString(J.first.get(x)));
@@ -186,7 +196,7 @@ public class ToCsvPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Pr
 						row.add(Integer.toString(J.first.get(I.algebra().fk(fk, x))));
 					}
 					for (Att att : (I.schema().attsFrom(en))) {
-						row.add(print(I.algebra().att(att, x)));
+						row.add(print(I.algebra().att(att, x), nulls, emit_nulls));
 					}
 					printer.printRecord(row);
 				}
@@ -200,7 +210,7 @@ public class ToCsvPragmaInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Pr
 				if (I.algebra().size(en) > 0) {
 					var out = new OutputStreamWriter(new FileOutputStream(fil + en + "." + ext),
 							StandardCharsets.UTF_8);
-					if ((Boolean)op.getOrDefault(AqlOption.csv_utf8_bom)) {
+					if ((Boolean) op.getOrDefault(AqlOption.csv_utf8_bom)) {
 						out.write('\ufeff');
 					}
 					out.write(ens.get(en));
