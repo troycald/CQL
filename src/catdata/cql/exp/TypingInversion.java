@@ -960,11 +960,8 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 
 	@Override
 	public InstExpCsv visitInstExpCsv(Unit param, AqlTyping exp) {
-		SchExp s = new SchExpVar("s");
-		TyExp t = new TyExpVar("t");
-		exp.defs.schs.put("s", t);
-		exp.defs.tys.put("t", Unit.unit);
-		return new InstExpCsv(s, new LinkedList(), new LinkedList(), "directory");
+		TyExp t = new TyExpSql();
+		return new InstExpCsv(t, new LinkedList(), new LinkedList(), "directory");
 	}
 
 	@Override
@@ -988,10 +985,8 @@ public class TypingInversion implements ExpCoVisitor<AqlTyping, Unit, RuntimeExc
 
 	@Override
 	public InstExpJdbc visitInstExpJdbc(Unit param, AqlTyping exp) {
-		SchExp s = new SchExpVar("s");
 		TyExp t = new TyExpSql();
-		exp.defs.schs.put("s", t);
-		return new InstExpJdbc(s, new LinkedList(), "jdbc_string", new LinkedList());
+		return new InstExpJdbc(t, new LinkedList(), "jdbc_string", new LinkedList());
 	}
 
 	@Override

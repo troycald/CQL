@@ -127,7 +127,7 @@ public class InstExpJdbcDirect extends InstExp<String, String, String, String> {
 			map.add(new Pair<>(new LocStr(0, en), query));
 		}
 
-		return new InstExpJdbc(schema, lll, jdbcString, map).eval(env, isCompileTime);
+		return new InstExpJdbc(new TyExpSch(schema), lll, jdbcString, map).eval(env, isCompileTime);
 	}
 
 	@Override

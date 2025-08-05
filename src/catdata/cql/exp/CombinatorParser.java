@@ -790,7 +790,7 @@ public class CombinatorParser implements IAqlParser {
 				.tuple(env(b, "->"), options).between(token("{"), token("}"))
 				.optional(new Pair<>(Collections.emptyList(), Collections.emptyList()));
 
-		Parser<InstExpCsv> ret = Parsers.tuple(token("import_csv"), ident.followedBy(token(":")), sch_ref.lazy(), qs)
+		Parser<InstExpCsv> ret = Parsers.tuple(token("import_csv"), ident.followedBy(token(":")), ty_ref.lazy(), qs)
 				.map(x -> new InstExpCsv(x.c, x.d.a, x.d.b, x.b));
 		return ret;
 	}
@@ -1669,7 +1669,7 @@ public class CombinatorParser implements IAqlParser {
 		Parser<Pair<List<catdata.Pair<LocStr, String>>, List<catdata.Pair<String, String>>>> qs = Parsers
 				.tuple(env(ident, "->"), options).between(token("{"), token("}"));
 
-		Parser<InstExpJdbc> ret = Parsers.tuple(token("import_jdbc"), ident.followedBy(token(":")), sch_ref.lazy(), qs)
+		Parser<InstExpJdbc> ret = Parsers.tuple(token("import_jdbc"), ident.followedBy(token(":")), ty_ref.lazy(), qs)
 				.map(x -> new InstExpJdbc(x.c, x.d.b, x.b, x.d.a));
 		return ret;
 	}

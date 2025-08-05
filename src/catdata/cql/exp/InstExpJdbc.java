@@ -12,9 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -23,10 +21,11 @@ import catdata.LocStr;
 import catdata.Pair;
 import catdata.Util;
 import catdata.cql.AqlOptions;
-import catdata.cql.Schema;
-import catdata.cql.SqlTypeSide;
-import catdata.cql.Term;
 import catdata.cql.AqlOptions.AqlOption;
+import catdata.cql.Collage;
+import catdata.cql.Schema;
+import catdata.cql.Term;
+import catdata.cql.TypeSide;
 import gnu.trove.map.hash.THashMap;
 
 public class InstExpJdbc extends InstExpImport<Connection, String> {
@@ -43,7 +42,7 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 		return Collections.emptySet();
 	}
 
-	public InstExpJdbc(SchExp schema, List<Pair<String, String>> options, String jdbcString,
+	public InstExpJdbc(TyExp schema, List<Pair<String, String>> options, String jdbcString,
 			List<Pair<LocStr, String>> map) {
 		super(schema, map, options);
 		this.jdbcString = jdbcString;
@@ -54,17 +53,9 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 	}
 
 	@Override
-	protected synchronized Connection start(Schema<String, String, Sym, Fk, Att> sch) throws SQLException {
-		if (!sch.typeSide.syms.keySet().containsAll(SqlTypeSide.syms().keySet())) {
-			throw new RuntimeException("SQL import must be onto sql typeside.");
-		}
-		if (!sch.fks.isEmpty()) {
-			throw new RuntimeException("SQL import must be onto attributes only");
-		}
+	protected synchronized Connection start(Collage<String, String, Sym, Fk, Att, Void, Void> sch) throws SQLException {
 		for (String s : map.keySet()) {
-			if (!sch.ens.contains((s))) {
-				throw new RuntimeException(s + " is not an entity in " + sch);
-			}
+			sch.getEns().add(s);
 		}
 
 		String toGet = jdbcString;
@@ -77,15 +68,15 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 			conn = DriverManager.getConnection(toGet);
 		}
 
-		tys0 = new THashMap<>(sch.typeSide.tys.size(), 2);
+		tys0 = new THashMap<>(sch.tys().size(), 2);
 
-		data = new THashMap<>(sch.ens.size(), 2);
+		data = new THashMap<>(sch.getEns().size(), 2);
 
-		for (String en : sch.ens) {
+		for (String en : sch.getEns()) {
 			data.put(en, new THashMap<>(8 * 1024, 1));
 		}
 
-		for (String ty : sch.typeSide.tys) {
+		for (String ty : sch.tys()) {
 			tys0.put(ty, new LinkedList<>());
 		}
 		return conn;
@@ -114,48 +105,48 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 		return sb.toString();
 	}
 
+	public static String sqlTypeToAqlType(Collage<String, String, Sym, Fk, Att, Void, Void>  typeSide, String s) {
+		String x = s.toLowerCase();
+		String y = x.substring(0, 1).toUpperCase() + x.substring(1, x.length());
+		if (!typeSide.tys().contains((y))) {
+			return "Other";
+		}
+		return y;
+	}
+	
 	static int fresh=0;
 	@Override
 	protected synchronized void joinedEn(Connection conn, String en, String s,
-			Schema<String, String, Sym, Fk, Att> sch) {
-		if (s == null) {
-			if (!(boolean) op.getOrDefault(AqlOption.import_missing_is_empty)) {
-				throw new RuntimeException("Missing query for entity: " + en + ". \n\nPossible options to consider: "
-						+ AqlOption.import_missing_is_empty);
-			}
-			return;
-		}
+			Collage<String, String, Sym, Fk, Att, Void, Void> sch) {
+		
 
 		try (Statement stmt = conn.createStatement()) {
+		//	System.out.println(s);
 			stmt.execute(s);
 			ResultSet rs = stmt.getResultSet();
 			ResultSetMetaData rsmd = rs.getMetaData();
-			checkColumns(en, s, sch, rsmd, (boolean)op.getOrDefault(AqlOption.import_missing_is_empty));
+			List<Att> atts = new LinkedList<>();
 
+			int cols = rsmd.getColumnCount();
+			for (int i = 0; i < cols; i++) {
+				String att = rsmd.getColumnName(i+1);
+				String ty = sqlTypeToAqlType(sch, rsmd.getColumnTypeName(i+1));
+				var a = Att.Att(en, att);
+				sch.atts().put(a, new Pair<>(en, ty));
+				atts.add(a);
+			}
+			
 			while (rs.next()) {
 				Object gen = fresh++;
 				String g1 = toGen(en, gen.toString()); // store strings
-				data.get(en).put(g1, new Pair<>(new THashMap<>(sch.fksFrom(en).size(), 2),
-						new THashMap<>(sch.attsFrom(en).size(), 2)));
-
-				/*for (Fk fk : sch.fksFrom(en)) {
-					Object rhs = rs.getObject(fk.convert());
-
-					if (rhs == null) {
-						stmt.close();
-						rs.close();
-						conn.close();
-						throw new RuntimeException("ID " + gen + " has a NULL foreign key value on " + fk);
-					}
-					String en2 = sch.fks.get(fk).second;
-					String g2 = toGen(en2, rhs.toString()); // store strings
-
-					data.get(en).get(g1).first.put(fk, g2);
-				}*/
-				for (Att att : sch.attsFrom(en)) {
+				
+				data.get(en).put(g1, new Pair<>(new THashMap<>(0, 2),
+						new THashMap<>(cols, 2)));
+				
+				for (Att att : atts) {
 					Object rhs = rs.getObject(att.str);
-					String ty = sch.atts.get(att).second;
-					data.get(en).get(g1).second.put(att, objectToSk(sch, rhs, g1, att, ty));
+					String ty = sch.atts().get(att).second;
+					data.get(en).get(g1).second.put(att, objectToSk(rhs, g1, att, ty));
 				}
 
 			}
@@ -172,7 +163,7 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 
 	}
 
-	private void checkColumns(String en, String s, Schema<String, String, Sym, Fk, Att> sch, ResultSetMetaData rsmd, boolean ignore)
+	/* private void checkColumns(String en, String s, Schema<String, String, Sym, Fk, Att> sch, ResultSetMetaData rsmd, boolean ignore)
 			throws SQLException {
 		Set<String> colNames = new TreeSet<>();
 		for (int i = 1; i <= rsmd.getColumnCount(); i++) {
@@ -201,8 +192,8 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 		} 
 		if (!Util.containsUpToCase(colNames, idCol)) {
 			throw new RuntimeException("No ID column " + idCol + " in \n\n" + s);
-		} */
-	}
+		} 
+	} */
 
 	@Override
 	public int hashCode() {
@@ -242,7 +233,7 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 		set.add(AqlOption.jdbc_quote_char);
 	}
 
-	private static <Z> Term<String, Void, Sym, Void, Void, Void, Z> objectToSk(Schema<String, String, Sym, Fk, Att> sch,
+	private static <Z> Term<String, Void, Sym, Void, Void, Void, Z> objectToSk(
 			Object rhs, String x, Att att, String ty) {
 		if (rhs == null) {
 			return Term.Obj(Optional.empty(), ty);
@@ -257,7 +248,7 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 	@Override
 	public SchExp type(AqlTyping G) {
 		schema.type(G);
-		return schema;
+		return new SchExpInst<>(this);
 	}
 
 }

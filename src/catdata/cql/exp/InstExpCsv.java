@@ -9,7 +9,6 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +32,12 @@ import com.opencsv.enums.CSVReaderNullFieldIndicator;
 import catdata.LocStr;
 import catdata.Pair;
 import catdata.Util;
+import catdata.cql.AqlJs;
 import catdata.cql.AqlOptions;
 import catdata.cql.AqlOptions.AqlOption;
+import catdata.cql.Collage;
 import catdata.cql.Schema;
+import catdata.cql.SqlTypeSide;
 import catdata.cql.Term;
 import gnu.trove.map.hash.THashMap;
 
@@ -84,7 +86,7 @@ public class InstExpCsv extends
 		return l.stream().map(x -> new Pair<>(x.first.str, x.second)).collect(Collectors.toList());
 	}
 
-	public InstExpCsv(SchExp schema,
+	public InstExpCsv(TyExp schema,
 			List<Pair<LocStr, Pair<List<Pair<LocStr, String>>, List<Pair<String, String>>>>> map,
 			List<Pair<String, String>> options, String f) {
 		super(schema, conv(map), options);
@@ -110,11 +112,9 @@ public class InstExpCsv extends
 				.append(Util.sep(map, " -> ", "\n\t", fun) + "\n}").toString();
 	}
 
-	/**
-	 * Expects filenames in the map
-	 */
+	
 	public static Map<String, List<String[]>> start2(Map<String, Reader> map, AqlOptions op,
-			Schema<String, String, Sym, Fk, Att> sch, boolean omitCheck) throws Exception {
+			Collage<String, String, Sym, Fk, Att, Void, Void> sch, boolean omitCheck, Map<String, Pair<List<Pair<String, String>>, List<Pair<String, String>>>> map2) throws Exception {
 		Character sepChar = (Character) op.getOrDefault(AqlOption.csv_field_delim_char);
 		Character quoteChar = (Character) op.getOrDefault(AqlOption.csv_quote_char);
 		Character escapeChar = (Character) op.getOrDefault(AqlOption.csv_escape_char);
@@ -124,74 +124,70 @@ public class InstExpCsv extends
 
 		Map<String, List<String[]>> ret = new THashMap<>();
 		for (String k : map.keySet()) {
-			if (!omitCheck) {
-				if (!sch.ens.contains((k))) {
-					throw new RuntimeException("Not an entity: " + k);
-				}
-			}
+
 			Reader r = map.get(k);
 
 			final CSVReader reader = new CSVReaderBuilder(r).withCSVParser(parser)
 					.withFieldAsNull(CSVReaderNullFieldIndicator.EMPTY_SEPARATORS).build();
+			sch.getEns().add(k);
 
 			List<String[]> rows = reader.readAll();
 
+			if (!rows.isEmpty()) {
+				String[] hdrs = rows.get(0);
+				for (int i = 0; i < hdrs.length; i++) {
+					Att att = Att.Att(k, hdrs[i]);
+					sch.atts().put(att, new Pair<>(k, "String"));
+				}
+			}
+			map2.put(k, new Pair<>(new LinkedList<>(), new LinkedList<>()));
 			ret.put((k), rows);
 			reader.close();
 			r.close();
 		}
 
-		if (!omitCheck) {
-			for (String en : sch.ens) {
-				if (!ret.containsKey(en)) {
-					ret.put(en,
-							new LinkedList<>(Collections.singletonList(Util
-									.union(sch.attsFrom(en).stream().map(Object::toString).collect(Collectors.toList()),
-											sch.fksFrom(en).stream().map(Object::toString).collect(Collectors.toList()))
-									.toArray(new String[0]))));
-				}
-			}
-		}
+		//System.out.println(sch);
 
 		return ret;
 	}
 
 	@Override
-	protected Map<String, List<String[]>> start(Schema<String, String, Sym, Fk, Att> sch) throws Exception {
+	protected Map<String, List<String[]>> start(Collage<String, String, Sym, Fk, Att, Void, Void> sch)
+			throws Exception {
 		// if (!sch.typeSide.syms.keySet().containsAll(SqlTypeSide.syms().keySet())) {
 		// throw new RuntimeException("CSV import must be onto sql typeside.");
 		// }
 
 		Map<String, Reader> m = new THashMap<>();
 		// Boolean b = (Boolean) op.getOrDefault(AqlOption.csv_prepend_entity);
-		for (String en : sch.ens) {
-			String x = f + op.getOrDefault(AqlOption.csv_import_prefix) + "/" + en.toString() + "."
-					+ op.getOrDefault(AqlOption.csv_file_extension);
+		File dir = new File(f);
+		if (!dir.isDirectory()) {
+			throw new RuntimeException("Expects folder of CSV files.");
+		}
+
+		for (File en : dir.listFiles()) {
+			String ext = (String) op.getOrDefault(AqlOption.csv_file_extension);
+			if (!en.getName().toLowerCase().endsWith(ext)) {
+				continue;
+			}
 			try {
-				InputStream is = makeURL(x);
+				InputStream is = makeURL(en.getAbsolutePath());
 				Reader r = new InputStreamReader(is);
-				m.put(en, r);
-			} catch (FileNotFoundException ex) {
-				if (!(boolean) op.getOrDefault(AqlOption.import_missing_is_empty)) {
-					ex.printStackTrace();
-					throw new RuntimeException(
-							"Missing: " + x + ". \n\nPossible options to consider: " + AqlOption.import_missing_is_empty
-									+ " and " + AqlOption.csv_import_prefix + " and " + AqlOption.csv_file_extension);
-				}
+				m.put(en.getName().substring(0, en.getName().length() - ext.length()), r);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				throw new RuntimeException(ex);
 			}
 		}
-		Map<String, List<String[]>> ret = start2(m, op, sch, false);
-		tys0 = new THashMap<>(sch.typeSide.tys.size(), 2);
-		data = new THashMap<>(sch.ens.size(), 2);
+		Map<String, List<String[]>> ret = start2(m, op, sch, false, this.map);
+		tys0 = new THashMap<>(sch.tys().size(), 2);
+		data = new THashMap<>(sch.getEns().size(), 2);
 
 		for (Entry<String, List<String[]>> en : ret.entrySet()) {
 			data.put(en.getKey(), new THashMap<>(en.getValue().size(), 2));
 		}
 
-		for (String ty : sch.typeSide.tys) {
+		for (String ty : sch.tys()) {
 			tys0.put(ty, new LinkedList<>());
 		}
 
@@ -213,7 +209,8 @@ public class InstExpCsv extends
 
 	@Override
 	protected void joinedEn(Map<String, List<String[]>> rows, String en0,
-			Pair<List<Pair<String, String>>, List<Pair<String, String>>> s, Schema<String, String, Sym, Fk, Att> sch) {
+			Pair<List<Pair<String, String>>, List<Pair<String, String>>> s,
+			Collage<String, String, Sym, Fk, Att, Void, Void> sch) {
 
 		String en = en0; // .replaceAll("[\uFEFF-\uFFFF]", "").trim();
 		Map<String, String> inner;
@@ -228,7 +225,7 @@ public class InstExpCsv extends
 		}
 
 		// index of each column name
-		Map<String, Integer> m = new THashMap<>(sch.ens.size(), 2);
+		Map<String, Integer> m = new THashMap<>(sch.getEns().size(), 2);
 
 		for (int i = 0; i < rows.get(en0).get(0).length; i++) {
 			// System.out.println(rows.get(en0).get(0)[i]);
@@ -238,76 +235,81 @@ public class InstExpCsv extends
 		String sep = (String) op.getOrDefault(inner, AqlOption.import_col_seperator);
 		String pre = (String) op.getOrDefault(inner, AqlOption.csv_import_prefix);
 		boolean skol = (boolean) op.getOrDefault(inner, AqlOption.csv_import_skolem_nulls);
-		
+
 		Map<String, String> map;
 		if (s != null) {
 			map = Util.toMapSafely(s.first);
 		} else {
 			map = new THashMap<>();
 		}
-
 		int startId = 0;
 
+		String[] cols = rows.get(en0).get(0);
 		for (String[] row : rows.get(en0).subList(1, rows.get(en0).size())) {
 			String l0;
 
-			String idCol = map.containsKey(en) ? map.get(en)
-					: (String) op.getOrDefault(inner, AqlOption.id_column_name);
+//			String idCol = map.containsKey(en) ? map.get(en)
+			// : (String) op.getOrDefault(inner, AqlOption.id_column_name);
 
-			if (autoGenIds && !m.containsKey(idCol)) {
-				l0 = toGen(en0, "" + startId++);
-			} else if (!autoGenIds && !m.containsKey(idCol)) {
-				throw new RuntimeException("On " + en + ", ID column " + idCol + " not found in headers " + m.keySet()
-						+ ". \n\nPossible solution: provide a mapping.\n\nPossible solution: set csv_generate_ids=true to auto-generate IDs.\n\nPossible solution: rename the headers in the CSV file.\n\nPossible solution: add an ID column to the CSV file.");
-			} else {
-				l0 = toGen(en0, row[m.get(idCol)]);
-			}
+			/* if (autoGenIds && !m.containsKey(idCol)) { */
+			l0 = toGen(en0, "" + startId++);
+			/*
+			 * } else if (!autoGenIds && !m.containsKey(idCol)) { throw new
+			 * RuntimeException("On " + en + ", ID column " + idCol +
+			 * " not found in headers " + m.keySet() +
+			 * ". \n\nPossible solution: provide a mapping.\n\nPossible solution: set csv_generate_ids=true to auto-generate IDs.\n\nPossible solution: rename the headers in the CSV file.\n\nPossible solution: add an ID column to the CSV file."
+			 * ); } else {
+			 */
+			// l0 = toGen(en0, row[m.get(idCol)]);
+//			}
 
-			data.get(en0).put(l0, new Pair<>(new THashMap<>(sch.fksFrom(en0).size(), 2),
-					new THashMap<>(sch.attsFrom(en0).size(), 2)));
+			data.get(en0).put(l0, new Pair<>(new THashMap<>(0, 2), new THashMap<>(row.length, 2)));
 
-			for (Fk fk : sch.fksFrom(en0)) {
-				String zz = row[m.get(mediate(en, prepend, sep, pre, map, fk.convert()))];
-				if (zz == null) {
-					throw new RuntimeException("FK has null value, " + fk + " on " + Arrays.toString(row));
-				}
-				String g = toGen(sch.fks.get(fk).second, zz);
-				// ens0.get(sch.fks.get(fk).second).add(g);
-				data.get(en0).get(l0).first.put(fk, g);
-			}
+			/*
+			 * for (Fk fk : sch.fksFrom(en0)) { String zz = row[m.get(mediate(en, prepend,
+			 * sep, pre, map, fk.convert()))]; if (zz == null) { throw new
+			 * RuntimeException("FK has null value, " + fk + " on " + Arrays.toString(row));
+			 * } String g = toGen(sch.fks.get(fk).second, zz); //
+			 * ens0.get(sch.fks.get(fk).second).add(g); data.get(en0).get(l0).first.put(fk,
+			 * g); }
+			 */
 
-			for (Att att : sch.attsFrom(en0)) {
-				String zz = mediate(en, prepend, sep, pre, map, att.convert());
+			for (String att : cols) {
+				String zz = mediate(en, prepend, sep, pre, map, att);
 				if (!m.containsKey(zz) && !m.isEmpty()) {
 					throw new RuntimeException("No column " + att + " in file for " + en + " nor explicit mapping for "
 							+ att + " given. Tried " + zz + " and options are " + Util.alphabetical(m.keySet()));
 				}
 				int z = m.get(zz);
 				if (z >= row.length) {
-//        System.out.println("att " + att + " zz " + zz + " map " + map + " pre " +pre); 
 					throw new RuntimeException("Cannot get index " + z + " from " + Arrays.toString(row));
 				}
 				String o = row[z];
-				
-				Term<String, Void, Sym, Void, Void, Void, String> r = skol ? objectToSk2(sch, o, l0, att, tys0, nullOnErr) : objectToSk(sch, o, l0, att, tys0, nullOnErr);
-				data.get(en0).get(l0).second.put(att, r);
+				var js = SqlTypeSide.SqlTypeSide(op).js;
+				var attt = Att.Att(en, att);
+				Term<String, Void, Sym, Void, Void, Void, String> r = skol
+						? objectToSk2(sch, o, l0, attt, tys0, nullOnErr, js)
+						: objectToSk(sch, o, l0, attt, tys0, nullOnErr, js);
+				data.get(en0).get(l0).second.put(Att.Att(en, att), r);
 			}
 		}
 
 	}
+
 	static int sk = 0;
+
 	private static Term<String, Void, Sym, Void, Void, Void, String> objectToSk2(
-			Schema<String, String, Sym, Fk, Att> sch, String rhs, String l0, Att att,
-			Map<String, Collection<String>> tys0, boolean errMeansNull) {
-		String ty = sch.atts.get(att).second;
+			Collage<String, String, Sym, Fk, Att, Void, Void> sch, String rhs, String l0, Att att,
+			Map<String, Collection<String>> tys0, boolean errMeansNull, AqlJs<String, Sym> js) {
+		String ty = sch.atts().get(att).second;
 		if (rhs == null) {
 			Term<String, Void, Sym, Void, Void, Void, String> r = Term.Sk("?" + sk);
 			tys0.get(ty).add("?" + sk);
 			sk++;
 			return r;
-		} else if (sch.typeSide.js.java_tys.containsKey(ty)) {
+		} else if (sch.java_tys().containsKey(ty)) {
 			try {
-				return Term.Obj(sch.typeSide.js.parse(ty, rhs), ty);
+				return Term.Obj(js.parse(ty, rhs), ty);
 			} catch (Exception ex) {
 				if (errMeansNull) {
 					return Term.Obj(Optional.empty(), ty);
@@ -323,14 +325,14 @@ public class InstExpCsv extends
 	}
 
 	private static Term<String, Void, Sym, Void, Void, Void, String> objectToSk(
-			Schema<String, String, Sym, Fk, Att> sch, String rhs, String l0, Att att,
-			Map<String, Collection<String>> tys0, boolean errMeansNull) {
-		String ty = sch.atts.get(att).second;
+			Collage<String, String, Sym, Fk, Att, Void, Void> sch, String rhs, String l0, Att att,
+			Map<String, Collection<String>> tys0, boolean errMeansNull, AqlJs js) {
+		String ty = sch.atts().get(att).second;
 		if (rhs == null) {
 			return Term.Obj(Optional.empty(), ty);
-		} else if (sch.typeSide.js.java_tys.containsKey(ty)) {
+		} else if (sch.java_tys().containsKey(ty)) {
 			try {
-				return Term.Obj(sch.typeSide.js.parse(ty, rhs), ty);
+				return Term.Obj(js.parse(ty, rhs), ty);
 			} catch (Exception ex) {
 				if (errMeansNull) {
 					return Term.Obj(Optional.empty(), ty);
@@ -394,7 +396,7 @@ public class InstExpCsv extends
 	@Override
 	public SchExp type(AqlTyping G) {
 		schema.type(G);
-		return schema;
+		return new SchExpInst<>(this);
 	}
 
 }

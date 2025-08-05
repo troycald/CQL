@@ -14,11 +14,14 @@ import catdata.Pair;
 import catdata.Raw;
 import catdata.Util;
 import catdata.cql.AqlOptions;
+import catdata.cql.AqlOptions.AqlOption;
+import catdata.cql.Collage;
+import catdata.cql.Collage.CCollage;
 import catdata.cql.Instance;
 import catdata.cql.Kind;
 import catdata.cql.Schema;
+import catdata.cql.SqlTypeSide;
 import catdata.cql.Term;
-import catdata.cql.AqlOptions.AqlOption;
 import catdata.cql.fdm.ImportAlgebra;
 import catdata.cql.fdm.SaturatedInstance;
 import gnu.trove.map.hash.THashMap;
@@ -60,7 +63,7 @@ public abstract class InstExpImport<Handle, Q> extends InstExp<String, String, S
 		return toGen(en, o, prepend_entity_on_ids, import_col_seperator);
 	}
 
-	public final SchExp schema;
+	public final TyExp schema;
 
 	public final Map<String, String> options;
 
@@ -73,7 +76,7 @@ public abstract class InstExpImport<Handle, Q> extends InstExp<String, String, S
 
 	public static IntRef counter = new IntRef(0);
 
-	public InstExpImport(SchExp schema, List<Pair<LocStr, Q>> map, List<Pair<String, String>> options) {
+	public InstExpImport(TyExp schema, List<Pair<LocStr, Q>> map, List<Pair<String, String>> options) {
 		this.schema = schema;
 
 		this.options = Util.toMapSafely(options);
@@ -107,17 +110,12 @@ public abstract class InstExpImport<Handle, Q> extends InstExp<String, String, S
 	@Override
 	public synchronized Instance<String, String, Sym, Fk, Att, String, String, String, String> eval0(AqlEnv env,
 			boolean isC) {
-		Schema<String, String, Sym, Fk, Att> sch = schema.eval(env, isC);
-		for (String ty : sch.typeSide.tys) {
-			if (!sch.typeSide.js.java_tys.containsKey(ty)) {
-				throw new RuntimeException("Import is only allowed onto java types");
-			}
-		}
 		if (isC) {
 			throw new IgnoreException();
 		}
-
 		op = new AqlOptions(options, env.defaults);
+		var xx = schema.eval(env, isC);
+		Collage<String, String, Sym, Fk, Att, Void, Void> sch = new CCollage<>(xx.collage());
 
 		idCol = (String) op.getOrDefault(AqlOption.id_column_name);
 		nullOnErr = (Boolean) op.getOrDefault(AqlOption.import_null_on_err_unsafe);
@@ -129,13 +127,15 @@ public abstract class InstExpImport<Handle, Q> extends InstExp<String, String, S
 
 		try {
 			Handle h = start(sch);
-			for (String en : sch.ens) {
+			for (String en : map.keySet()) {
 			//	System.out.println("doing " + en);
 				last = en;
 				Q z = map.get(en);
 				joinedEn(h, en, z, sch);
 			}
 			end(h);
+			
+
 		} catch (Exception exn) {
 			exn.printStackTrace();
 			String pre = "";
@@ -144,8 +144,9 @@ public abstract class InstExpImport<Handle, Q> extends InstExp<String, String, S
 			}
 			throw new RuntimeException(pre + exn.getMessage() + "\n\n" + getHelpStr());
 		}
+		var sch2 = new Schema<String, String, Sym, Fk, Att>(SqlTypeSide.SqlTypeSide(op), sch , op);
 		ImportAlgebra<String, String, Sym, Fk, Att, String, String> alg = new ImportAlgebra<String, String, Sym, Fk, Att, String, String>(
-				sch, en -> data.get(en).keySet(), tys0, (en, x) -> data.get(en).get(x).first,
+				sch2, en -> data.get(en).keySet(), tys0, (en, x) -> data.get(en).get(x).first,
 				(en, x) -> data.get(en).get(x).second, (x, y) -> y, (x, y) -> y, dont_check_closure,
 				Collections.emptySet());
 
@@ -159,11 +160,11 @@ public abstract class InstExpImport<Handle, Q> extends InstExp<String, String, S
 
 	protected abstract String getHelpStr();
 
-	protected abstract Handle start(Schema<String, String, Sym, Fk, Att> sch) throws Exception;
+	protected abstract Handle start(Collage<String, String, Sym, Fk, Att, Void, Void> sch) throws Exception;
 
 	protected abstract void end(Handle h) throws Exception;
 
-	protected abstract void joinedEn(Handle h, String en, Q s, Schema<String, String, Sym, Fk, Att> sch)
+	protected abstract void joinedEn(Handle h, String en, Q s, Collage<String, String, Sym, Fk, Att, Void, Void> sch)
 			throws Exception;
 
 	@SuppressWarnings("unused")

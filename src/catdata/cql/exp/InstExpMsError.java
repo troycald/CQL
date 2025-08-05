@@ -112,7 +112,7 @@ public class InstExpMsError extends InstExp<String, String, String, String> {
 //    map.add(new Pair<>(AqlOption.prepend_entity_on_ids.toString(), "false"));
     map.add(new Pair<>(AqlOption.id_column_name.toString(), "message_id"));
 
-    return new InstExpJdbc(schema, map, jdbcString, l).eval(env, isCompileTime);
+    return new InstExpJdbc(new TyExpSch(schema), map, jdbcString, l).eval(env, isCompileTime);
   }
 
   @Override
