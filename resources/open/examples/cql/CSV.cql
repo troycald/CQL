@@ -32,12 +32,7 @@ command createCsvData = exec_js {
 	"Java.type(\"catdata.Util\").writeFile(\"eId,is\\n10,0\\n11,1\\n12,2\", \"Employee.csv\")"
 }
 
-instance I0 = import_csv "." : S0 {
-	Employee -> {Employee -> eId   eAsP -> is    eSsn -> is}
-	#eId -> eId can be ommitted
-
-	Person -> {Person -> pId  ssn -> pId}
-}
+instance I0 = import_csv "." : sql 
 
 command exportCsvData = export_csv_instance I0 "exported"
 command exportCsvData2 = export_csv_transform (identity I0) "exported_trans.csv"

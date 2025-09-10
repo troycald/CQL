@@ -47,9 +47,22 @@ schema WaterSchema = literal : Type {
 ###########################################################################
 #input instances
 
-instance LandInstance = import_csv "https://categoricaldata.net/demo/LandDB/" : LandSchema
+instance LandInstance = literal : LandSchema {
+	generators x7 x8 : Amphibian  x3 x4 x5 x6 : Animal x0 x1 x2 : LandAnimal
+	equations
+	x4.species = Gecko x5.species = equine x6.species=FROG
+	x7.isA = x0 x7.toAnimal = x4
+	x8.isA = x2 x8.toAnimal = x6
+	x0.isA = x4	x1.isA = x5 x2.isA = x6
+}
 
-instance WaterInstance = import_csv "https://categoricaldata.net/demo/WaterDB/" : WaterSchema
+instance WaterInstance = literal : WaterSchema {
+	generators x4 : Amphibian x2 x3 : Animal x0 x1 : WaterAnimal
+	equations
+	x4.isA = x1  x4.toAnimal = x3
+	x2.species = FISH x3.species = frog
+	x0.isA = x2 x1.isA = x3
+}
 
 ###########################################################################
 #compute the canonical schema colimit, then enhances its semantics

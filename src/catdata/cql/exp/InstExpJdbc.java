@@ -108,6 +108,10 @@ public class InstExpJdbc extends InstExpImport<Connection, String> {
 	public static String sqlTypeToAqlType(Collage<String, String, Sym, Fk, Att, Void, Void>  typeSide, String s) {
 		String x = s.toLowerCase();
 		String y = x.substring(0, 1).toUpperCase() + x.substring(1, x.length());
+	//	System.out.println(x + " and " + y);
+		if (x.equals("character varying")) {
+			return "String";
+		}
 		if (!typeSide.tys().contains((y))) {
 			return "Other";
 		}

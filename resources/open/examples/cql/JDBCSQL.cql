@@ -77,7 +77,7 @@ schema S = literal : sql {
  }
 
 #import an instance by providing queries for each entity
-instance J = import_jdbc ""  : S {
+instance J = import_jdbc ""  : sql {
  #use name as first name
   #use null as last name
   #use id as age	
