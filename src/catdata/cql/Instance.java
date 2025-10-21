@@ -619,19 +619,22 @@ public abstract class Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> implements S
 			}
 		});
 
-		eqs((a, b) -> {
-			Chc<Ty, En> x = type(a);
-			Chc<Ty, En> y = type(b);
-			if (!x.equals(y)) {
-				Util.anomaly();
-			}
-			if (!dp().eq(null, a, b)) {
-		//		System.out.println(this);
-		//		System.out.println();
-//				System.out.println(this.algebra().toStringProver());
-				throw new RuntimeException("Anomaly: not equal: " + a + " and " + b);
-			}
-		});
+		if (schema().typeSide.js.java_fns.isEmpty()) {
+		
+			eqs((a, b) -> {
+				Chc<Ty, En> x = type(a);
+				Chc<Ty, En> y = type(b);
+				if (!x.equals(y)) {
+					Util.anomaly();
+				}
+				if (!dp().eq(null, a, b)) {
+			//		System.out.println(this);
+			//		System.out.println();
+	//				System.out.println(this.algebra().toStringProver());
+					throw new RuntimeException("Anomaly: not equal: " + a + " and " + b);
+				}
+			});
+		}
 
 	} 
 
