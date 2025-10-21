@@ -37,7 +37,7 @@ public class EProver<T, C, V> extends DPKB<T, C, V> {
 				return Util.anomaly();
 			}
 			Util.writeFile(s, g.getAbsolutePath());
-			// System.out.println(g.getAbsolutePath());
+//			 System.out.println("sent to E: " + s);
 			// --proof-object
 			String str = exePath + (auto ? " --auto" : "") + " --proof-object --cpu-limit=" + seconds + " "
 					+ g.getAbsolutePath();
@@ -93,9 +93,16 @@ public class EProver<T, C, V> extends DPKB<T, C, V> {
 			if (g == null) {
 				return Util.anomaly();
 			}
-			Util.writeFile(kb.tff(ctx, lhs, rhs), g.getAbsolutePath());
-			// System.out.println(g.getAbsolutePath());
+			var zzz = kb.tff(ctx, lhs, rhs);
+			Util.writeFile(zzz, g.getAbsolutePath());
+		
+		//	System.out.println("-------------");
 
+		//	System.out.println(zzz);
+
+		//	System.out.println("-------------");
+
+			
 			String str = exePath + (auto ? " --auto" : "") + " --silent --cpu-limit=" + seconds + " "
 					+ g.getAbsolutePath();
 			proc = Runtime.getRuntime().exec(str);

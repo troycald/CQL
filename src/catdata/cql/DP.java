@@ -6,36 +6,36 @@ import catdata.Chc;
 
 public interface DP<Ty, En, Sym, Fk, Att, Gen, Sk> {
 
-  public abstract String toStringProver();
-  
-  public default boolean supportsTrivialityCheck() {
-    return false;
-  }
+	public abstract String toStringProver();
 
-  boolean eq(Map<String, Chc<Ty, En>> ctx, Term<Ty, En, Sym, Fk, Att, Gen, Sk> lhs,
-      Term<Ty, En, Sym, Fk, Att, Gen, Sk> rhs);
+	public default boolean supportsTrivialityCheck() {
+		return false;
+	}
 
-  @SuppressWarnings("unused")
-  default Term<Ty, En, Sym, Fk, Att, Gen, Sk> nf(Map<String, Chc<Ty, En>> ctx,
-      Term<Ty, En, Sym, Fk, Att, Gen, Sk> term) {
-    throw new RuntimeException("Anomaly: please report");
-  }
+	boolean eq(Map<String, Chc<Ty, En>> ctx, Term<Ty, En, Sym, Fk, Att, Gen, Sk> lhs,
+			Term<Ty, En, Sym, Fk, Att, Gen, Sk> rhs);
 
-  static <Ty, En, Sym, Fk, Att, Gen, Sk> DP<Ty, En, Sym, Fk, Att, Gen, Sk> initial() {
-    return new DP<>() {
+	@SuppressWarnings("unused")
+	default Term<Ty, En, Sym, Fk, Att, Gen, Sk> nf(Map<String, Chc<Ty, En>> ctx,
+			Term<Ty, En, Sym, Fk, Att, Gen, Sk> term) {
+		throw new RuntimeException("Anomaly: please report");
+	}
 
-      @Override
-      public boolean eq(Map<String, Chc<Ty, En>> ctx, Term<Ty, En, Sym, Fk, Att, Gen, Sk> lhs,
-          Term<Ty, En, Sym, Fk, Att, Gen, Sk> rhs) {
-        throw new RuntimeException();
-      }
+	static <Ty, En, Sym, Fk, Att, Gen, Sk> DP<Ty, En, Sym, Fk, Att, Gen, Sk> initial() {
+		return new DP<>() {
 
-      @Override
-      public String toStringProver() {
-        return "Theorem prover for empty theory";
-      }
+			@Override
+			public boolean eq(Map<String, Chc<Ty, En>> ctx, Term<Ty, En, Sym, Fk, Att, Gen, Sk> lhs,
+					Term<Ty, En, Sym, Fk, Att, Gen, Sk> rhs) {
+				throw new RuntimeException();
+			}
 
-    };
-  }
+			@Override
+			public String toStringProver() {
+				return "Theorem prover for empty theory";
+			}
+
+		};
+	}
 
 }

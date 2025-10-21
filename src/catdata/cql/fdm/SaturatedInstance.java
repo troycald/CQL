@@ -108,7 +108,7 @@ public class SaturatedInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> extends Inst
 		inner_dp = new InnerDP();
 		inner_alg = new InnerAlgebra();
 
-		if (size < 1024 * 4) {
+		if (size < 1024 * 16) {
 			validate();
 			validateMore();
 			checkSatisfaction();

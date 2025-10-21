@@ -60,6 +60,7 @@ public class WarehouseImpl extends Warehouse<String, String> {
 
 		if (schs == null)
 			Util.anomaly();
+		
 		univ = new ColimitSchema<String>(typeside, schs, links.enLinks, links.colLinks.values(), options);
 
 		var l = new LinkedList<ED>();

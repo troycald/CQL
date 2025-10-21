@@ -1095,7 +1095,7 @@ public class WarehouseUI<N, T> {
 
 				} catch (Exception e) {
 					e.printStackTrace();
-					JOptionPane.showMessageDialog(null, e.getMessage());
+					//JOptionPane.showMessageDialog(null, e.getMessage());
 				}
 			};
 		};

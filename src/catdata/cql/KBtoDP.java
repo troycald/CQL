@@ -48,6 +48,9 @@ public class KBtoDP<Ty, En, Sym, Fk, Att, Gen, Sk> implements DP<Ty, En, Sym, Fk
 		Term<Ty, En, Sym, Fk, Att, Gen, Sk> lhs2 = simp.apply(lhs);
 		Term<Ty, En, Sym, Fk, Att, Gen, Sk> rhs2 = simp.apply(rhs);
 
+		var oldLhs = lhs2;
+		var oldRhs = rhs2;
+		
 		if (lhs.hasTypeType(ctx)) {
 			lhs2 = js.reduce(lhs2);
 			rhs2 = js.reduce(rhs2);
@@ -62,6 +65,14 @@ public class KBtoDP<Ty, En, Sym, Fk, Att, Gen, Sk> implements DP<Ty, En, Sym, Fk
 			dealWithNew(rhs2, allowNew);
 
 			b = dpkb.eq(ctx, lhs2.toKB(), rhs2.toKB());
+			
+			if (!b && !js.java_tys.isEmpty()) {
+				lhs2 = oldLhs;
+				rhs2 = oldRhs;
+				dealWithNew(lhs2, allowNew);
+				dealWithNew(rhs2, allowNew);
+				b = dpkb.eq(ctx, lhs2.toKB(), rhs2.toKB());
+			}
 		}
 
 		return b;

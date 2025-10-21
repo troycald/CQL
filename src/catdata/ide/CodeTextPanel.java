@@ -56,8 +56,8 @@ public class CodeTextPanel extends JPanel {
 		// p.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		add(p);
 		p.setBorder(BorderFactory.createEmptyBorder());
-		if (text.length() > 1024*64) {
-			text = text.substring(0, 1024*64) + " TRUNCATED";
+		if (text.length() > 1024*256) {
+			text = text.substring(0, 1024*256) + " TRUNCATED";
 		}
 		
 		setText(text);

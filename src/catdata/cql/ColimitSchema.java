@@ -873,10 +873,10 @@ public class ColimitSchema<N> implements Semantics {
 		for (Entry<String, Quad<N, String, N, String>> s0 : eqEn.entrySet()) {
 			var s = s0.getValue();
 			if (!nodes.containsKey(s.first)) {
-				throw new RuntimeException("Not a schema: " + s.first);
+				throw new RuntimeException("Not a schema: " + s.first + " available: " + Util.sep(nodes.keySet(), ","));
 			}
 			if (!nodes.containsKey(s.third)) {
-				throw new RuntimeException("Not a schema: " + s.first);
+				throw new RuntimeException("Not a schema: " + s.first + " available: " + Util.sep(nodes.keySet(), ","));
 			}
 			if (!nodes.get(s.first).ens.contains(s.second)) {
 				throw new RuntimeException("Not an entity in " + s.first + ", " + s.second);

@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -138,21 +139,21 @@ public class IDE {
 		});
 
 		new Thread(() -> {
-			File jf = new File("cql.jar");
-			if (jf.exists()) {
-				long current = jf.lastModified();
-	//			 System.out.println("cql.jar file modification date: " + new
-	//			 Date(current).toLocaleString());
-				try {
-					URL u = new URL("https://www.categoricaldata.net/version.php");
-					URLConnection c = u.openConnection();
-					c.connect();
-					String l = Util.readFile(new InputStreamReader(c.getInputStream()));
-					long newest = Long.parseLong(l.trim() );
-			//		System.out.println("From server: " + l.trim());		
-			
-			//		System.out.println("Newest cql.jar version: " + new Date(newest).toLocaleString());
-			//		System.out.println("Current cql.jar version: " + new Date(current).toLocaleString());
+			try {
+				URL u = new URL("https://www.categoricaldata.net/version.php");
+				URLConnection c = u.openConnection();
+				c.connect();
+				String l = Util.readFile(new InputStreamReader(c.getInputStream()));
+				long newest = Long.parseLong(l.trim());
+
+				File jf = new File("cql.jar");
+				if (jf.exists()) {
+					long current = jf.lastModified();
+					// System.out.println("cql.jar file modification date: " + new
+					// Date(current).toLocaleString());
+
+					System.out.println("Newest cql.jar version: " + new Date(newest).toLocaleString());
+					System.out.println("Current cql.jar version: " + new Date(current).toLocaleString());
 					if (newest > current) {
 						int x = JOptionPane.showConfirmDialog(null,
 								"New Version Available (based on local cql.jar timestamp) - Download and Exit?",
@@ -162,9 +163,9 @@ public class IDE {
 							System.exit(0);
 						}
 					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
+				} 
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
 
 		}).start();
@@ -180,16 +181,7 @@ public class IDE {
 
 	static {
 		System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
-		try {
-			Class.forName("oracle.jdbc.OracleDriver");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		try {
-			Class.forName("org.apache.hive.jdbc.HiveDriver");
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
+
 	}
 
 }

@@ -527,25 +527,25 @@ public final class Term<Ty, En, Sym, Fk, Att, Gen, Sk> implements KBExp<Head<Ty,
 			if (args == null || args.isEmpty()) {
 				return sym().toString();
 			} else if (args.size() == 2) {
-				return "(" + args.get(0).toString(sk_printer, gen_printer, quote) + " " + sym().toString() + " "
+				return "(" + args.get(0).toString(sk_printer, gen_printer, quote) + " " + (quote ? Util.maybeQuote(sym().toString()) : sym().toString())  + " "
 						+ args.get(1).toString(sk_printer, gen_printer, quote) + ")";
 			} else {
-				return sym().toString() + "(" + Util.sep(
+				return (quote ? Util.maybeQuote(sym().toString()) : sym().toString()) + "(" + Util.sep(
 						args.stream().map(x -> x.toString(sk_printer, gen_printer, quote)).collect(Collectors.toList()), ", ")
 						+ ")";
 			}
 		} else if (att() != null) {
-			return arg.toString(sk_printer, gen_printer, quote) + "." + att().toString();
+			return arg.toString(sk_printer, gen_printer, quote) + "." + (quote ? Util.maybeQuote(att().toString()) : att().toString());
 		} else if (fk() != null) {
-			return arg.toString(sk_printer, gen_printer, quote) + "." + fk().toString();
+			return arg.toString(sk_printer, gen_printer, quote) + "." + (quote ? Util.maybeQuote(fk().toString()) : fk().toString());
 		} else if (gen() != null) {
-			return gen_printer.apply(gen());
+			return quote ? Util.maybeQuote(gen_printer.apply(gen())) : gen_printer.apply(gen()); 
 		} else if (sk() != null) {
-			return sk_printer.apply(sk());
+			return quote ? Util.maybeQuote(sk_printer.apply(sk())) : sk_printer.apply(sk());
 		} else if (obj() != null) {
 			if (obj() instanceof Optional) {
 				Optional<?> o = (Optional<?>) obj();
-				if (o.isPresent()) {
+				if (o.isPresent()) { 
 					
 					if (quote) {
 						return Util.nice(o.get().toString());
@@ -554,9 +554,9 @@ public final class Term<Ty, En, Sym, Fk, Att, Gen, Sk> implements KBExp<Head<Ty,
 				}
 				return ""; // TODO mark
 			}
-			//if (quote) {
-		//		return Util.maybeQuote(obj().toString()); // + "@" + ty;
-		//	}
+			if (quote) {
+				return Util.maybeQuote(obj().toString()) + "@" + ty();
+			}
 			return obj().toString();
 		}
 		throw new RuntimeException("Anomaly: please report");

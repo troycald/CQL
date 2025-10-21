@@ -563,7 +563,7 @@ public abstract class Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> implements S
 		final StringBuilder sb = new StringBuilder();
 		final List<String> eqs0 = new ArrayList<>(size());
 		eqs((a, b) -> {
-			eqs0.add("\n" + a + " = " + b);
+			eqs0.add("\n" + a.toString(true) + " = " + b.toString(true));
 		});
 		sb.append(g);
 
@@ -626,6 +626,9 @@ public abstract class Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> implements S
 				Util.anomaly();
 			}
 			if (!dp().eq(null, a, b)) {
+		//		System.out.println(this);
+		//		System.out.println();
+//				System.out.println(this.algebra().toStringProver());
 				throw new RuntimeException("Anomaly: not equal: " + a + " and " + b);
 			}
 		});

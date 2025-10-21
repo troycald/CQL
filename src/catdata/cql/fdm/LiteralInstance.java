@@ -41,7 +41,7 @@ public class LiteralInstance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y>
 		this.allowUnsafeJava = allowUnsafeJava;
 		if (size() < 16 * 1024) {
 			validate();
-			// validateMore();
+			validateMore();
 		}
 
 	}
