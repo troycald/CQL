@@ -619,7 +619,7 @@ public abstract class Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> implements S
 			}
 		});
 
-		if (schema().typeSide.js.java_fns.isEmpty()) {
+		
 		
 			eqs((a, b) -> {
 				Chc<Ty, En> x = type(a);
@@ -627,14 +627,13 @@ public abstract class Instance<Ty, En, Sym, Fk, Att, Gen, Sk, X, Y> implements S
 				if (!x.equals(y)) {
 					Util.anomaly();
 				}
-				if (!dp().eq(null, a, b)) {
-			//		System.out.println(this);
-			//		System.out.println();
-	//				System.out.println(this.algebra().toStringProver());
+				if (!a.hasTypeType() && !dp().eq(null, a, b)) {
+					throw new RuntimeException("Anomaly: not equal: " + a + " and " + b);
+				} else if (a.hasTypeType() && schema().typeSide.js.java_fns.isEmpty() && !dp().eq(null, a, b)) {
 					throw new RuntimeException("Anomaly: not equal: " + a + " and " + b);
 				}
 			});
-		}
+		
 
 	} 
 
