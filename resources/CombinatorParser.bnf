@@ -1,0 +1,413 @@
+# CombinatorParser BNF Grammar
+# Source: src/catdata/cql/exp/CombinatorParser.java
+
+<program> ::= [ "imports" <ident>* ] <options> <decl>*
+
+<decl> ::= <comment>
+         | "typeside"       <ident> "=" <ty-exp>
+         | "schema"         <ident> "=" <sch-exp>
+         | "instance"       <ident> "=" <inst-exp>
+         | "mapping"        <ident> "=" <map-exp>
+         | "transform"      <ident> "=" <trans-exp>
+         | "graph"          <ident> "=" <graph-exp>
+         | "query"          <ident> "=" <query-exp>
+         | "command"        <ident> "=" <pragma-exp>
+         | "schema_colimit" <ident> "=" <colim-sch-exp>
+         | "constraints"    <ident> "=" <eds-exp>
+         | "apg_typeside"   <ident> "=" <apg-ty-exp>
+         | "apg_instance"   <ident> "=" <apg-inst-exp>
+         | "apg_morphism"   <ident> "=" <apg-trans-exp>
+         | "apg_schema"     <ident> "=" <apg-sch-exp>
+         | "apg_mapping"    <ident> "=" <apg-map-exp>
+
+<comment> ::= "html" "{" "(*" StringLiteral "*)" "}"
+           | "md"   "{" "(*" StringLiteral "*)" "}"
+
+<ident>   ::= Identifier | StringLiteral | IntegerLiteral
+<locstr>  ::= <ident>
+
+<options> ::= [ "options" (<option> "=" <ident>)* ]
+
+<imports-exp> ::= [ "imports" <exp>* ]
+
+<term> ::= <ident> "@" <ident>
+         | <ident> "(" [ <term> ("," <term>)* ] ")"
+         | "(" <term> <ident> <term> ")"
+         | <ident> ("." <ident>)+
+         | <ident>
+
+<egglog-term> ::= "(" <ident> <egglog-term>* ")"
+
+<ctx> ::= (<ident>+ [ ":" <ident> ]) ("," <ident>+ [ ":" <ident> ])*
+
+<eq> ::= "forall" <ctx> "." <term> "=" <term>
+       | <term> "=" <term>
+
+<term-in-ctx> ::= "lambda" <ctx> "." <term>
+                | <term>
+
+# Typeside
+<ty-exp> ::= "typesideOf" <sch-exp>
+           | "empty"
+           | "sql"
+           | "rdf"
+           | "excel"
+           | "sqlNull" <ty-exp>
+           | <ty-exp-raw>
+           | <ident>
+           | "(" <ty-exp> ")"
+
+<ty-exp-raw> ::= "literal" "{"
+                 [ "imports" <ty-exp>* ]
+                 [ "types" <locstr>* ]
+                 [ "constants" (<locstr>+ ":" <ident>)* ]
+                 [ "functions" (<locstr>+ ":" <ident> ("," <ident>)* "->" <ident>)* ]
+                 [ "external_types"   (<locstr> "->" <ident>)* ]
+                 [ "external_parsers" (<locstr> "->" <ident>)* ]
+                 [ "external_functions" (<locstr> ":" [<ident>(,)] "->" <ident> "=" <ident>)* ]
+                 [ "equations" (<eq>)* ]
+                 <options>
+                 "}"
+
+# Schema
+<sch-exp> ::= "empty" ":" <ty-exp>
+            | "unit" ":" <ty-exp>
+            | "pivot" <inst-exp> [ "{" <options> "}" ]
+            | "schemaOf" <inst-exp>
+            | "getSchema" <colim-sch-exp>
+            | "cod_q" <query-exp>
+            | "dom_q" <query-exp>
+            | "cod_m" <map-exp>
+            | "dom_m" <map-exp>
+            | "except" <sch-exp> <sch-exp>
+            | "rdf"
+            | "prefix" <sch-exp> <ident>
+            | "front" <eds-exp> <ident>
+            | "ms_catalog" <ty-exp> <ident>
+            | "ms_query" <ty-exp> <ident>
+            | "ms_error" <ident> <ident> ":" <ty-exp>
+            | "ms_error_shallow" <ident> ":" <ty-exp>
+            | "from_ms_catalog" <inst-exp> [ "{" <options> "}" ]
+            | "spanify" <sch-exp>
+            | "import_csv" <ident> ":" <ty-exp> [ "{" <options> "}" ]
+            | "import_jdbc_all" <ident> [ "{" <options> "}" ]
+            | "tinkerpop"
+            | <sch-exp-raw>
+            | <ident>
+            | "(" <sch-exp> ")"
+
+<sch-exp-raw> ::= "literal" ":" <ty-exp> "{"
+                  [ "imports" <sch-exp>* ]
+                  [ "entities" <locstr>* ]
+                  [ "foreign_keys" (<locstr>+ ":" <ident> "->" <ident> )* ]
+                  [ "path_equations" (<ident> ("." <ident>)* "=" <ident> ("." <ident>)* )* ]
+                  [ "attributes" (<locstr>+ ":" <ident> "->" <ident> )* ]
+                  [ "observation_equations" ( "forall" <ident> [ ":" <ident> ] "." <term> "=" <term> )* ]
+                  <options>
+                  "}"
+
+# Instance
+<inst-exp> ::= "cascade_delete" <inst-exp> ":" <sch-exp>
+             | "coproduct" <ident> ("+" <ident>)* ":" <sch-exp> [ "{" <options> "}" ]
+             | "empty" ":" <sch-exp>
+             | "pi" <map-exp> <inst-exp> [ "{" <options> "}" ]
+             | "except" <inst-exp> <inst-exp>
+             | "spanify" <inst-exp> [ "{" <options> "}" ]
+             | "sigma" <map-exp> <inst-exp> [ "{" <options> "}" ]
+             | "sigma_chase" <map-exp> <inst-exp> [ "{" <options> "}" ]
+             | "frozen" <query-exp> <ident>
+             | "delta" <map-exp> <inst-exp>
+             | "skolem" <inst-exp>
+             | "core" <inst-exp>
+             | "distinct" <inst-exp>
+             | "anonymize" <inst-exp>
+             | "pivot" <inst-exp> [ "{" <options> "}" ]
+             | "include" <inst-exp> ":" <sch-exp>
+             | "eval" <query-exp> <inst-exp> [ "{" <options> "}" ]
+             | "dom_t" <trans-exp>
+             | "cod_t" <trans-exp>
+             | "chase" <eds-exp> <inst-exp> [ "{" <options> "}" ]
+             | "ms_error" <ident> <ty-exp> <ident>
+             | "coeval" <query-exp> <inst-exp> [ "{" <options> "}" ]
+             | <inst-exp-raw>
+             | <inst-exp-random>
+             | <inst-exp-coeq>
+             | <inst-exp-rdf-all>
+             | <inst-exp-xml-all>
+             | <inst-exp-json-all>
+             | <inst-exp-jdbc>
+             | <inst-exp-csv>
+             | <inst-exp-jdbc-direct>
+             | <inst-exp-tinkerpop>
+             | <inst-exp-colimit>
+             | <ident>
+             | "(" <inst-exp> ")"
+
+<inst-exp-raw> ::= "literal" ":" <sch-exp> "{"
+                   [ "imports" <inst-exp>* ]
+                   [ "generators" (<locstr> ":" <ident>)* ]
+                   [ "equations" (<term> "=" <term>)* ]
+                   [ "multi_equations" ( <ident> "->" "{" (<term> <term>)(, ... ) "}" )* ]
+                   <options>
+                   "}"
+
+<inst-exp-random> ::= "random" ":" <sch-exp> "{"
+                      "generators" (<locstr> "->" IntegerLiteral)*
+                      <options> "}"
+
+<inst-exp-coeq> ::= "coequalize" <trans-exp> <trans-exp> [ "{" <options> "}" ]
+
+<inst-exp-jdbc> ::= "import_jdbc" <ident> ":" <ty-exp> "{"
+                    (<locstr> "->" <ident>)* <options> "}"
+
+<inst-exp-csv> ::= "import_csv" <ident> ":" <ty-exp> "{"
+                   [ (<locstr> "->" <ident>)* <options> ] "}"
+
+<inst-exp-rdf-all> ::= "import_rdf_all" <ident> [ "{" <options> "}" ]
+<inst-exp-xml-all> ::= "import_xml_all" <ident> [ "{" <options> "}" ]
+<inst-exp-json-all> ::= "import_json_ld_all" <ident> [ "{" <options> "}" ]
+<inst-exp-jdbc-direct> ::= "import_jdbc_direct" <ident> <ident> ":" <sch-exp> [ "{" <options> "}" ]
+<inst-exp-tinkerpop> ::= "import_tinkerpop_all" [ "{" <options> "}" ]
+
+<inst-exp-colimit> ::= "colimit" <graph-exp> <sch-exp> "{"
+                       [ "nodes" (<locstr> "->" <inst-exp>)* ]
+                       [ "edges" (<locstr> "->" <trans-exp>)* ]
+                       <options> "}"
+
+# Graph
+<graph-exp> ::= <graph-exp-raw>
+              | <ident>
+              | "(" <graph-exp> ")"
+
+<graph-exp-raw> ::= "literal" "{"
+                    [ "imports" <graph-exp>* ]
+                    [ "nodes" <locstr>* ]
+                    [ "edges" (<locstr>+ ":" <ident> "->" <ident>)* ]
+                    "}"
+
+# Mapping
+<map-exp> ::= "include" <sch-exp> <sch-exp>
+            | "identity" <sch-exp>
+            | "getMapping" <colim-sch-exp> <ident>
+            | "getPseudo" <colim-sch-exp>
+            | "to_prefix" <sch-exp> <ident>
+            | "from_prefix" <sch-exp> <ident>
+            | "[" <map-exp> ";" <map-exp> "]"
+            | "pivot" <inst-exp> [ "{" <options> "}" ]
+            | <map-exp-raw>
+            | <ident>
+            | "(" <map-exp> ")"
+
+<map-exp-raw> ::= "literal" ":" <sch-exp> "->" <sch-exp> "{"
+                  [ "imports" <map-exp>* ]
+                  [ "foreign_keys" (<locstr> "->" (<ident>("."<ident>)* | "identity"))* ]
+                  [ "attributes" (<locstr> "->" <lambda-or-path>)* ]
+                  <options>
+                  "}"
+
+<lambda-or-path> ::= "lambda" <ident> [ ":" <ident> ] "." <term>
+                   | <ident>("."<ident>)*
+
+# Transform
+<trans-exp> ::= "identity" <inst-exp>
+              | "include" <inst-exp> <inst-exp>
+              | "distinct_return" <inst-exp>
+              | "frozen" <query-exp> "lambda" <ident> ":" <ident> "." <term> ":" <ident>
+              | "pi" <map-exp> <trans-exp> [ "{" <options> "}" ] [ "{" <options> "}" ]
+              | "sigma" <map-exp> <trans-exp> [ "{" <options> "}" ] [ "{" <options> "}" ]
+              | "delta" <map-exp> <trans-exp>
+              | "unit" <map-exp> <inst-exp> [ "{" <options> "}" ] [ "{" <options> "}" ]
+              | "counit" <map-exp> <inst-exp> [ "{" <options> "}" ] [ "{" <options> "}" ]
+              | "distinct" <trans-exp>
+              | "eval" <query-exp> <trans-exp> [ "{" <options> "}" ]
+              | "except_return" <inst-exp> <inst-exp>
+              | "except" <trans-exp> <inst-exp>
+              | "coeval" <query-exp> <trans-exp> [ "{" <options> "}" ] [ "{" <options> "}" ]
+              | "unit_query" <query-exp> <inst-exp> [ "{" <options> "}" ]
+              | "counit_query" <query-exp> <inst-exp> [ "{" <options> "}" ]
+              | "chase_return" <eds-exp> <inst-exp>
+              | "skolem" <inst-exp>
+              | "[" <trans-exp> ";" <trans-exp> "]"
+              | "subseteq" <query-exp> <query-exp>
+              | <trans-exp-raw>
+              | <trans-exp-csv>
+              | <trans-exp-jdbc>
+              | <ident>
+              | "(" <trans-exp> ")"
+
+<trans-exp-raw> ::= "literal" ":" <inst-exp> "->" <inst-exp> "{"
+                    [ "imports" <trans-exp>* ]
+                    [ "generators" (<locstr> "->" <term>)* ]
+                    <options>
+                    "}"
+
+<trans-exp-csv> ::= "import_csv" ":" <inst-exp> "->" <inst-exp> "{"
+                    (<locstr> "->" <ident>)* <options> "}"
+
+<trans-exp-jdbc> ::= "import_jdbc" <ident> ":" <inst-exp> "->" <inst-exp> "{"
+                     (<locstr> "->" <ident>)* <options> "}"
+
+# Query
+<query-exp> ::= "toQuery" <map-exp> [ "{" <options> "}" ]
+              | "toCoQuery" <map-exp> [ "{" <options> "}" ]
+              | "fromInstance" <inst-exp>
+              | "[" <query-exp> ";" <query-exp> "]" [ "{" <options> "}" ]
+              | "spanify" <sch-exp>
+              | "spanify_mapping" <map-exp>
+              | "delta" <map-exp> <query-exp>
+              | "rext" <query-exp> <query-exp> [ "{" <options> "}" ]
+              | "fromCoSpan" <map-exp> <map-exp> [ "{" <options> "}" ]
+              | "back" <eds-exp> <ident> [ "{" <options> "}" ]
+              | "front" <eds-exp> <ident> [ "{" <options> "}" ]
+              | "identity" <sch-exp>
+              | "include" <sch-exp> <sch-exp>
+              | "fromConstraints" <ident> <eds-exp>
+              | "chase" <eds-exp> <query-exp>
+              | "reformulate" <eds-exp> <query-exp> <sch-exp> <ident>
+              | <query-exp-raw>
+              | <query-exp-raw-simple>
+              | <ident>
+              | "(" <query-exp> ")"
+
+<query-exp-raw> ::= "literal" ":" <sch-exp> "->" <sch-exp> "{"
+                    [ "params" (<locstr> ":" <ident>)* ]
+                    [ "bindings" (<locstr> "=" <term>)* ]
+                    [ "imports" <query-exp>* ]
+                    <preblock>*
+                    <options>
+                    "}"
+
+<query-exp-raw-simple> ::= "simple" ":" <sch-exp> <preblock-simple>
+
+# preblock (query blocks)
+<preblock> ::= "entity" <locstr> "->" "{"
+               [ "from" (<locstr> ":" <ident>)* ]
+               [ "where" (<term> "=" <term> )* ]
+               [ "attributes" ["*"] (<locstr> "->" (<term> | <agg>))* ]
+               [ "foreign_keys" (<locstr> "->" <trans>) * ]
+               <options>
+               "}"
+
+<preblock-simple> ::= "{"
+                      [ "from" (<locstr> ":" <ident>)* ]
+                      [ "where" (<term> "=" <term> )* ]
+                      [ "attributes" ["*"] (<locstr> "->" (<term> | <agg>))* ]
+                      [ "foreign_keys" (<locstr> "->" <trans>) * ]
+                      <options>
+                      "}"
+
+<agg> ::= "from" (<ident> ":" <ident>)*
+         [ "where" (<term> "=" <term> )* ]
+         "return" <term> "aggregate" <term> "lambda" <ident> <ident> "." <term>
+
+# EDS / constraints
+<eds-exp> ::= "empty" ":" <sch-exp>
+            | "fromSchema" <sch-exp>
+            | "sql" <sch-exp>
+            | "sqlNull" <ty-exp>
+            | "tinkerpop"
+            | "sigma" <map-exp> <eds-exp>
+            | "from_ms_catalog" <inst-exp> ":" <sch-exp> [ "{" <options> "}" ]
+            | "from_oracle" <ident> ":" <sch-exp>
+            | "from_mysql" <ident> ":" <sch-exp>
+            | "learn" <inst-exp> <inst-exp>
+            | "all" <inst-exp> <sch-exp>
+            | "infer" <eds-exp> "->" <eds-exp> ":" <sch-exp> "{" (<ident> "." <ident> "->" <ident> "." <ident>)* "}"
+            | "include" <sch-exp> <ident> <ident> [ "{" <options> "}" ]
+            | <eds-exp-raw>
+            | <ident>
+
+<eds-exp-raw> ::= "literal" ":" <sch-exp> "{"
+                  [ "imports" <eds-exp>* ]
+                  (<ed-exp-raw>)*
+                  <options>
+                  "}"
+
+<ed-exp-raw> ::= [ "forall" (<locstr> ":" <ident>)* ]
+                 [ "where" (<term> "=" <term> )* ]
+                 "->"
+                 [ "exists" ["unique"] (<locstr> ":" <ident>)* ]
+                 [ "where" (<term> "=" <term> )* ]
+
+# Pragma
+<lemma> ::= "{" (<ident>* <options>)? "}"
+
+<pragma-exp> ::= "export_json_instance" <inst-exp> <ident> [ "{" ... "}" ]
+               | "export_rdf_instance_xml" <inst-exp> <ident> [ "{" ... "}" ]
+               | "export_rdf_direct_xml" <inst-exp> <ident> [ "{" ... "}" ]
+               | "export_csv_instance" <inst-exp> <ident> [ "{" <options> "}" ]
+               | "export_excel_instance" <inst-exp> <ident> [ "{" <options> "}" ]
+               | "export_csv_transform" <trans-exp> <ident> [ "{" <options> "}" ] [ "{" <options> "}" ]
+               | "exec_jdbc" <ident> <lemma>
+               | "exec_js" <lemma>
+               | "spawn_bitsy" [ "{" <options> "}" ]
+               | "exec_tinkerpop" <lemma>
+               | "export_tinkerpop_instance" <inst-exp> [ "{" <options> "}" ]
+               | "exec_cmdline" <lemma>
+               | "export_jdbc_instance" <inst-exp> <ident> <ident> [ "{" <options> "}" ]
+               | "export_jdbc_query" <query-exp> <ident> <ident> <ident> [ "{" <options> "}" ]
+               | "export_jdbc_transform" <trans-exp> <ident> <ident> [ "{" <options> "}" ] [ "{" <options> "}" ]
+               | "match" <ident> ":" <graph-exp> "->" <graph-exp> [ "{" <options> "}" ]
+               | "check" <eds-exp> <inst-exp> [ "{" <options> "}" ]
+               | "check_query" <query-exp> <eds-exp> <eds-exp>
+               | "assert_consistent" <inst-exp>
+               | <ident>
+               | "(" <pragma-exp> ")"
+
+# Schema colimit
+<colim-sch-exp> ::= "literal" <graph-exp> ":" <ty-exp> "{"
+                    [ "nodes" (<locstr> "->" <sch-exp>)* ]
+                    [ "edges" (<locstr> "->" <map-exp>)* ]
+                    <options> "}"
+                  | "wrap" <colim-sch-exp> <map-exp> <map-exp>
+                  | "simplify" <colim-sch-exp> [ "{" <options> "}" ]
+                  | <colim-sch-exp-pseudo>
+                  | <colim-sch-exp-quotient>
+                  | <colim-exp-modify>
+                  | <ident>
+                  | "(" <colim-sch-exp> ")"
+
+# APG typeside
+<apg-ty-exp>   ::= <apg-ty-exp-raw> | <ident> | "(" <apg-ty-exp> ")"
+<apg-sch-exp>  ::= "empty" <apg-ty-exp>
+                 | "unit" <apg-ty-exp>
+                 | "(" <apg-sch-exp> "*" <apg-sch-exp> ")"
+                 | "<" <apg-sch-exp> "+" <apg-sch-exp> ">"
+                 | <apg-sch-exp-raw>
+                 | <ident>
+                 | "(" <apg-sch-exp> ")"
+
+<apg-inst-exp> ::= "coequalize" <apg-trans-exp> <apg-trans-exp>
+                 | "delta" <apg-map-exp> <apg-inst-exp>
+                 | "equalize" <apg-trans-exp> <apg-trans-exp>
+                 | "empty" <apg-sch-exp>
+                 | "unit" <apg-ty-exp>
+                 | "(" <apg-inst-exp> "*" <apg-inst-exp> ")"
+                 | "<" <apg-inst-exp> "+" <apg-inst-exp> ">"
+                 | <apg-inst-exp-raw>
+                 | <ident>
+                 | "(" <apg-inst-exp> ")"
+
+<apg-trans-exp> ::= "equalize" <apg-trans-exp> <apg-trans-exp>
+                  | "equalize_u" <apg-trans-exp> <apg-trans-exp> <apg-trans-exp>
+                  | "coequalize" <apg-trans-exp> <apg-trans-exp>
+                  | "coequalize_u" <apg-trans-exp> <apg-trans-exp> <apg-trans-exp>
+                  | "delta" <apg-map-exp> <apg-trans-exp>
+                  | "identity" <apg-inst-exp>
+                  | "empty" <apg-inst-exp>
+                  | "unit" <apg-inst-exp>
+                  | "(" <apg-trans-exp> "," <apg-trans-exp> ")"
+                  | "<" <apg-trans-exp> "|" <apg-trans-exp> ">"
+                  | "[" <apg-trans-exp> ";" <apg-trans-exp> "]"
+                  | "fst" <apg-inst-exp> <apg-inst-exp>
+                  | "snd" <apg-inst-exp> <apg-inst-exp>
+                  | "inl" <apg-inst-exp> <apg-inst-exp>
+                  | "inr" <apg-inst-exp> <apg-inst-exp>
+                  | <apg-trans-exp-raw>
+                  | <ident>
+                  | "(" <apg-trans-exp> ")"
+
+<apg-map-exp> ::= <apg-map-exp-raw> | <ident> | "(" <apg-map-exp> ")"
+
+# Note: <apg-ty-exp-raw>, <apg-sch-exp-raw>, <apg-inst-exp-raw>, <apg-trans-exp-raw>, <apg-map-exp-raw>
+# correspond to the literal blocks in CombinatorParser's apg*Raw() methods.
